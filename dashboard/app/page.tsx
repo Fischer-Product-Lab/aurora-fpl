@@ -506,7 +506,7 @@ function PortfolioCaseStudy() {
           onTimeUpdate={(event) => syncCue(event.currentTarget.currentTime)}
           preload="metadata"
           ref={audioRef}
-          src="/media/aurora-portfolio-walkthrough.mp3"
+          src="/media/aurora-portfolio-walkthrough.wav"
         >
           <track default kind="captions" label="English" src="/media/aurora-portfolio-walkthrough.vtt" srcLang="en" />
         </audio>

@@ -4,6 +4,11 @@ Status: the ElevenLabs recording generated on July 19, 2026 is integrated into
 the public Run Explorer. Keep this brief as the reproducible source for future
 voice or copy changes.
 
+The original generated MP3 is archived beside this brief as
+`aurora-elevenlabs-master.mp3`. The deployed site uses a mono, 24 kHz,
+16-bit PCM WAV derived from that master so its chapter jumps work reliably on
+the production host.
+
 ## Goal
 
 Create a warm, credible portfolio narration that a recruiter or nontechnical

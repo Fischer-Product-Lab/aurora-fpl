@@ -162,15 +162,15 @@ test("ElevenLabs narration assets and portfolio copy stay aligned", async () => 
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../public/media/aurora-portfolio-walkthrough.txt", import.meta.url), "utf8"),
     readFile(new URL("../public/media/aurora-portfolio-walkthrough.vtt", import.meta.url), "utf8"),
-    readFile(new URL("../public/media/aurora-portfolio-walkthrough.mp3", import.meta.url)),
+    readFile(new URL("../public/media/aurora-portfolio-walkthrough.wav", import.meta.url)),
   ]);
 
   assert.match(page, /81-second walkthrough/);
-  assert.match(page, /aurora-portfolio-walkthrough\.mp3/);
-  assert.doesNotMatch(page, /77-second walkthrough|aurora-portfolio-walkthrough\.wav/);
+  assert.match(page, /aurora-portfolio-walkthrough\.wav/);
+  assert.doesNotMatch(page, /77-second walkthrough|aurora-portfolio-walkthrough\.mp3/);
   assert.match(page, /Limits and takeaway/);
   assert.match(transcript, /reliable AI is not just a smart model/i);
   assert.doesNotMatch(transcript, /The next step is one model-backed adapter/i);
-  assert.match(captions, /00:01:20\.771/);
-  assert.ok(audio.byteLength > 1_000_000);
+  assert.match(captions, /00:01:20\.758/);
+  assert.ok(audio.byteLength > 3_000_000);
 });
