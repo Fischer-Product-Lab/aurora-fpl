@@ -19,6 +19,7 @@ test("server-renders the Aurora explorer shell", async () => {
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
   assert.match(response.headers.get("content-security-policy") ?? "", /default-src 'self'/);
+  assert.match(response.headers.get("content-security-policy") ?? "", /media-src 'self' blob:/);
   assert.equal(response.headers.get("x-frame-options"), "DENY");
 
   const html = await response.text();
@@ -167,6 +168,8 @@ test("ElevenLabs narration assets and portfolio copy stay aligned", async () => 
 
   assert.match(page, /81-second walkthrough/);
   assert.match(page, /aurora-portfolio-walkthrough\.wav/);
+  assert.match(page, /URL\.createObjectURL/);
+  assert.match(page, /chapterReady/);
   assert.doesNotMatch(page, /77-second walkthrough|aurora-portfolio-walkthrough\.mp3/);
   assert.match(page, /Limits and takeaway/);
   assert.match(transcript, /reliable AI is not just a smart model/i);

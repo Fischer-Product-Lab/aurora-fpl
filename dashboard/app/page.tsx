@@ -454,9 +454,40 @@ const PORTFOLIO_TOUR_CUES = [
   { at: 60.62, time: "01:01", label: "Limits and takeaway" },
 ];
 
+const PORTFOLIO_TOUR_AUDIO = "/media/aurora-portfolio-walkthrough.wav";
+
 function PortfolioCaseStudy() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [activeCue, setActiveCue] = useState(0);
+  const [audioSrc, setAudioSrc] = useState<string>();
+  const [chapterReady, setChapterReady] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    let objectUrl: string | undefined;
+
+    async function prepareSeekableAudio() {
+      try {
+        const response = await fetch(PORTFOLIO_TOUR_AUDIO);
+        if (!response.ok) throw new Error(`Narration request failed: ${response.status}`);
+        objectUrl = URL.createObjectURL(await response.blob());
+        if (!active) {
+          URL.revokeObjectURL(objectUrl);
+          return;
+        }
+        setAudioSrc(objectUrl);
+        setChapterReady(true);
+      } catch {
+        if (active) setAudioSrc(PORTFOLIO_TOUR_AUDIO);
+      }
+    }
+
+    void prepareSeekableAudio();
+    return () => {
+      active = false;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, []);
 
   function syncCue(currentTime: number) {
     const nextCue = PORTFOLIO_TOUR_CUES.findLastIndex((cue) => currentTime >= cue.at);
@@ -506,14 +537,15 @@ function PortfolioCaseStudy() {
           onTimeUpdate={(event) => syncCue(event.currentTarget.currentTime)}
           preload="metadata"
           ref={audioRef}
-          src="/media/aurora-portfolio-walkthrough.wav"
+          aria-busy={!audioSrc}
+          src={audioSrc}
         >
           <track default kind="captions" label="English" src="/media/aurora-portfolio-walkthrough.vtt" srcLang="en" />
         </audio>
         <ol className="tour-cues">
           {PORTFOLIO_TOUR_CUES.map((cue, index) => (
             <li key={cue.time} data-active={index === activeCue}>
-              <button onClick={() => playFrom(cue.at)} type="button"><time>{cue.time}</time><span>{cue.label}</span></button>
+              <button disabled={!chapterReady} onClick={() => playFrom(cue.at)} type="button"><time>{cue.time}</time><span>{cue.label}</span></button>
             </li>
           ))}
         </ol>
