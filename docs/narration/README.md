@@ -1,5 +1,9 @@
 # ElevenLabs narration production brief
 
+Status: the ElevenLabs recording generated on July 19, 2026 is integrated into
+the public Run Explorer. Keep this brief as the reproducible source for future
+voice or copy changes.
+
 ## Goal
 
 Create a warm, credible portfolio narration that a recruiter or nontechnical
@@ -56,7 +60,7 @@ exaggeration.
    `aurora-elevenlabs-master.mp3`.
 5. Attach that file to the Codex task.
 
-After the audio is attached, the integration pass will:
+For a future replacement recording, the integration pass should:
 
 1. inspect the recording and exact duration;
 2. create an optimized browser audio file while retaining the master;

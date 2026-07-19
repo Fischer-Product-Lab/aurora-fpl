@@ -1,9 +1,11 @@
-Aurora is a test lab for the machinery around AI agents. Instead of asking whether an agent can answer once, it asks what should happen when part of the workflow goes wrong.
+Most AI agent demos show the happy path: ask a question, get an answer. Aurora tests what happens when the work goes wrong.
 
-The demo uses a fictional flash-sale outage. Four specialists investigate telemetry, releases, payments, and security. Their findings enter an append-only evidence board. A planner proposes a response, an independent reviewer can challenge a missing step, scoped approval controls any simulated change, and health checks decide whether recovery is real.
+Think of it as air-traffic control for a team of digital specialists. During a pretend flash-sale outage, four specialists check system health, a software release, payments, and security. They add their findings to a shared record. A planner recommends a response. An independent reviewer looks for gaps. Approval, budget, and health checks decide whether any action is allowed, and whether it actually worked.
 
-Three matched studies show why this control plane matters. In the plan-review test, the reviewer rescued all thirty deliberately incomplete plans. In the backup-continuity test, one bounded reassignment recovered all thirty runs with an unavailable specialist. In the resource-limit test, a complete four-unit budget recovered, while a three-unit budget stopped all thirty runs before dispatch and spent nothing.
+The dashboard shows three controlled experiments. Independent review repaired all thirty incomplete plans. When one specialist was unavailable, one approved backup recovered all thirty runs. And when recovery needed four budget units but only three remained, every run stopped before work began, without spending anything.
 
-Choose a scenario on the left, compare its conditions, then open the timeline, evidence, approvals, health checks, resource limits, or audit log. Every metric is rebuilt from ordered events, so you can inspect the proof behind the result.
+Choose a scenario. Follow the plain-language story, or open the timeline and evidence to see how the decision was made.
 
-Aurora is intentionally deterministic and scripted, so it shows control-plane behavior, not general model reliability. The next step is one model-backed adapter, with prompts, tokens, latency, parse failures, and replay data recorded under the same guardrails.
+Aurora is a laboratory, not a production claim. Its published studies are scripted and repeatable. The system can also accept one optional model-generated diagnosis through the same rules, while approval and execution remain controlled.
+
+The idea is simple: reliable AI is not just a smart model. It is a well-governed system around it.

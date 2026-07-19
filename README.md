@@ -85,7 +85,7 @@ attempts, each with one possible transport retry).
 The live demo is the best tour; the complete narrative is in the
 [portfolio case study](docs/case-study.md). The capture rationale and update
 checklist remain in [docs/screenshots/README.md](docs/screenshots/README.md).
-The replacement voiceover script and handoff instructions are in the
+The recorded voiceover script and regeneration instructions are in the
 [ElevenLabs narration brief](docs/narration/README.md).
 
 ![Aurora dashboard overview](docs/screenshots/dashboard-overview.png)

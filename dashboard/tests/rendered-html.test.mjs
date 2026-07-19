@@ -156,3 +156,21 @@ test("starter preview dependencies are fully removed", async () => {
   assert.doesNotMatch(page, /_sites-preview|SkeletonPreview|dangerouslySetInnerHTML/);
   assert.doesNotMatch(packageJson, /react-loading-skeleton|site-creator-vinext-starter/);
 });
+
+test("ElevenLabs narration assets and portfolio copy stay aligned", async () => {
+  const [page, transcript, captions, audio] = await Promise.all([
+    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../public/media/aurora-portfolio-walkthrough.txt", import.meta.url), "utf8"),
+    readFile(new URL("../public/media/aurora-portfolio-walkthrough.vtt", import.meta.url), "utf8"),
+    readFile(new URL("../public/media/aurora-portfolio-walkthrough.mp3", import.meta.url)),
+  ]);
+
+  assert.match(page, /81-second walkthrough/);
+  assert.match(page, /aurora-portfolio-walkthrough\.mp3/);
+  assert.doesNotMatch(page, /77-second walkthrough|aurora-portfolio-walkthrough\.wav/);
+  assert.match(page, /Limits and takeaway/);
+  assert.match(transcript, /reliable AI is not just a smart model/i);
+  assert.doesNotMatch(transcript, /The next step is one model-backed adapter/i);
+  assert.match(captions, /00:01:20\.771/);
+  assert.ok(audio.byteLength > 1_000_000);
+});

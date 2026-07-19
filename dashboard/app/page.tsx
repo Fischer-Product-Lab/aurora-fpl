@@ -448,10 +448,10 @@ function MetricCard({ label, value, context }: { label: string; value: string; c
 
 const PORTFOLIO_TOUR_CUES = [
   { at: 0, time: "00:00", label: "Why Aurora exists" },
-  { at: 9, time: "00:09", label: "How a run works" },
-  { at: 29, time: "00:29", label: "What the tests proved" },
-  { at: 50, time: "00:50", label: "How to inspect the proof" },
-  { at: 62, time: "01:02", label: "Limits and next step" },
+  { at: 8.46, time: "00:08", label: "How a run works" },
+  { at: 33.76, time: "00:34", label: "What the tests proved" },
+  { at: 53.6, time: "00:54", label: "How to inspect the proof" },
+  { at: 60.62, time: "01:01", label: "Limits and takeaway" },
 ];
 
 function PortfolioCaseStudy() {
@@ -497,7 +497,7 @@ function PortfolioCaseStudy() {
 
       <div className="narrated-tour">
         <div className="narrated-tour-heading">
-          <div><span className="eyebrow">Quick orientation</span><h3>Listen to the 77-second walkthrough</h3></div>
+          <div><span className="eyebrow">Quick orientation</span><h3>Listen to the 81-second walkthrough</h3></div>
           <p>Press play, then use the time markers to jump to the part you want to show. <a href="/media/aurora-portfolio-walkthrough.txt">Read the transcript.</a></p>
         </div>
         <audio
@@ -506,7 +506,7 @@ function PortfolioCaseStudy() {
           onTimeUpdate={(event) => syncCue(event.currentTarget.currentTime)}
           preload="metadata"
           ref={audioRef}
-          src="/media/aurora-portfolio-walkthrough.wav"
+          src="/media/aurora-portfolio-walkthrough.mp3"
         >
           <track default kind="captions" label="English" src="/media/aurora-portfolio-walkthrough.vtt" srcLang="en" />
         </audio>
@@ -524,7 +524,7 @@ function PortfolioCaseStudy() {
         <div>
           <p><strong>Limit.</strong> Aurora is deterministic and scripted. It demonstrates control-plane behavior under specific conditions, not general model reliability or production performance.</p>
           <p><strong>Lesson.</strong> Reliable agent systems need typed contracts, evidence provenance, bounded recovery, approval gates, and verification around the model—not confidence in a generated answer.</p>
-          <p><strong>Next.</strong> Add one model-backed adapter while recording its model, prompt, tokens, latency, parse failures, and replay data under the same guardrails.</p>
+          <p><strong>Extension.</strong> Aurora now includes one optional model-backed diagnosis behind the same evidence and validation contract. Approval and execution remain controlled.</p>
         </div>
       </details>
     </section>
@@ -1069,7 +1069,7 @@ export default function Home() {
           {!loading && panel === "trace" && <TracePanel run={selectedRun} onSelectEvent={setSelectedEvent} />}
           {!loading && panel === "trace" && selectedEvent && <EventInspector event={selectedEvent} onClose={() => setSelectedEvent(null)} />}
 
-          <footer className="app-footer"><div><strong>Aurora Agent Orchestration Lab</strong><span>A Fischer Product Lab experiment.</span><span>Scripted agents today. Stable contracts for model-backed agents tomorrow.</span></div><div><span>{selectedRun.data.trace.length} events</span><span>{selectedRun.data.evidence.length} evidence items</span><span>{selectedRun.data.task_results.length} tasks</span></div></footer>
+          <footer className="app-footer"><div><strong>Aurora Agent Orchestration Lab</strong><span>A Fischer Product Lab experiment.</span><span>Deterministic studies, plus one optional model-backed diagnosis behind the same controls.</span></div><div><span>{selectedRun.data.trace.length} events</span><span>{selectedRun.data.evidence.length} evidence items</span><span>{selectedRun.data.task_results.length} tasks</span></div></footer>
         </div>
       </div>
       <p className="sr-only" aria-live="polite">Showing {story.title}: {selectedRun.title}, outcome {outcomeLabel(selectedRun)}.</p>

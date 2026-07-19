@@ -175,25 +175,30 @@ and its additional cost produces a measurable recovery or safety advantage.
 
 ## Phase 3 — Introduce one model-backed agent
 
-Add a narrow `AgentBackend` protocol while keeping deterministic handlers as the
-default. Replace only comprehensive synthesis first.
+Status: **the narrow comprehensive-diagnosis adapter, recording boundary, and
+offline replay are implemented; repeated live-model trials remain**
 
-The model-backed synthesizer must:
+Aurora now has an `AgentBackend` protocol while keeping deterministic handlers
+as the default. Only comprehensive diagnosis can be replaced by the optional
+model-backed path.
 
-- return the existing typed diagnosis contract;
-- cite only committed evidence IDs;
-- select only allow-listed cause and action IDs;
-- receive no private evaluator truth or mutable production state;
-- record model, prompt/version hash, tokens, latency, parse errors, and retries;
-- distinguish transport retries from semantic correction retries;
-- support recorded-response replay for deterministic tests.
+The implemented model-backed synthesizer:
 
-Give the single-agent baseline the same model, tools, total token budget, and
-production safeguards. Run repeated trials per case because a seed alone no
-longer controls model sampling.
+- returns the existing typed diagnosis contract;
+- cites only committed evidence IDs;
+- selects only allow-listed cause IDs and trusted evidence IDs;
+- receives no private evaluator truth or mutable production state;
+- records model, prompt/version hash, tokens, latency, parse errors, and retries;
+- distinguishes transport retries from semantic correction retries;
+- supports recorded-response replay for deterministic tests.
 
-Definition of done: model runs can be replayed, invalid structured output fails
-safely, and the paired evaluation remains fair.
+The remaining evaluation step is to give a fair comparison arm the same model,
+tools, total token budget, and production safeguards, then run repeated trials
+per case because a seed alone no longer controls model sampling.
+
+Current acceptance: model runs can be replayed and invalid structured output,
+refusal, incomplete status, or recording failure stops safely before approval.
+Phase completion still requires a fair repeated-trial live-model evaluation.
 
 ## Phase 4 — Observability
 
@@ -212,7 +217,8 @@ Implemented:
 Remaining observability work:
 
 - parent/dependency links and the critical path;
-- model token and latency accounting once a model-backed agent exists;
+- dashboard presentation of model token and latency accounting once a recorded
+  live-model study exists;
 - redacted JSONL export, with optional OpenTelemetry-compatible spans.
 
 Definition of done: a failed or expensive run can be explained from the trace
@@ -238,5 +244,7 @@ Add one independent stale or contradictory-evidence fault before combining any
 faults. Preserve the matched identity-control pattern and require the critic and
 policy gate to distinguish low-quality evidence from missing evidence. Then add
 median/p95 latency, cost-normalized utility, and critical-path visualization.
-After those deterministic measurements are stable, introduce one replayable
-model-backed synthesizer behind the existing typed contract.
+The replayable model-backed synthesizer now exists behind the typed contract.
+After the remaining deterministic measurements are stable, run its first
+recorded repeated-trial study and surface that external token and latency data
+in the explorer without mixing it into the simulator's virtual budget.
