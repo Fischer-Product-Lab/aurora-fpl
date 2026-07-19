@@ -1,0 +1,840 @@
+{
+  "artifacts": [
+    {
+      "id": "clean-full-orchestration",
+      "kind": "simulation_result",
+      "metadata": {
+        "expected_outcome": "recovered",
+        "fault": null,
+        "fault_active": false,
+        "seed": 101,
+        "strategy": "full_orchestration",
+        "study": null,
+        "study_arm": "baseline",
+        "variant": "bot_db_contention"
+      },
+      "path": "runs/clean-full-orchestration.json",
+      "relationship_ids": [],
+      "summary": "A healthy reference run with parallel specialists, independent review, governed execution, and verified recovery.",
+      "tags": [
+        "clean",
+        "reference",
+        "orchestration"
+      ],
+      "title": "Clean full orchestration",
+      "type": "run"
+    },
+    {
+      "id": "planning-control-without-critic",
+      "kind": "simulation_result",
+      "metadata": {
+        "expected_outcome": "recovered",
+        "fault": "planning_omission",
+        "fault_active": false,
+        "seed": 101,
+        "strategy": "specialists_no_critic",
+        "study": "planning_omission",
+        "study_arm": "matched_control",
+        "variant": "bot_db_contention"
+      },
+      "path": "runs/planning-control-without-critic.json",
+      "relationship_ids": [
+        "pair-planning-without-critic"
+      ],
+      "summary": "The identity-control candidate plan remains complete even though the specialist team has no independent critic.",
+      "tags": [
+        "control",
+        "planning",
+        "no-critic"
+      ],
+      "title": "Planning control without critic",
+      "type": "run"
+    },
+    {
+      "id": "planning-fault-without-critic",
+      "kind": "simulation_result",
+      "metadata": {
+        "expected_outcome": "safely_degraded",
+        "fault": "planning_omission",
+        "fault_active": true,
+        "seed": 101,
+        "strategy": "specialists_no_critic",
+        "study": "planning_omission",
+        "study_arm": "fault",
+        "variant": "bot_db_contention"
+      },
+      "path": "runs/planning-fault-without-critic.json",
+      "relationship_ids": [
+        "pair-planning-without-critic",
+        "contrast-planning-critic"
+      ],
+      "summary": "A causal mitigation is omitted and self-review lets the incomplete plan proceed to a safely degraded outcome.",
+      "tags": [
+        "fault",
+        "planning",
+        "no-critic",
+        "degraded"
+      ],
+      "title": "Planning omission without critic",
+      "type": "run"
+    },
+    {
+      "id": "planning-control-with-critic",
+      "kind": "simulation_result",
+      "metadata": {
+        "expected_outcome": "recovered",
+        "fault": "planning_omission",
+        "fault_active": false,
+        "seed": 101,
+        "strategy": "specialists_with_critic",
+        "study": "planning_omission",
+        "study_arm": "matched_control",
+        "variant": "bot_db_contention"
+      },
+      "path": "runs/planning-control-with-critic.json",
+      "relationship_ids": [
+        "pair-planning-with-critic"
+      ],
+      "summary": "The matched identity control shows that independent review is dormant when the candidate plan is already complete.",
+      "tags": [
+        "control",
+        "planning",
+        "critic"
+      ],
+      "title": "Planning control with critic",
+      "type": "run"
+    },
+    {
+      "id": "planning-fault-with-critic",
+      "kind": "simulation_result",
+      "metadata": {
+        "expected_outcome": "recovered",
+        "fault": "planning_omission",
+        "fault_active": true,
+        "seed": 101,
+        "strategy": "specialists_with_critic",
+        "study": "planning_omission",
+        "study_arm": "fault",
+        "variant": "bot_db_contention"
+      },
+      "path": "runs/planning-fault-with-critic.json",
+      "relationship_ids": [
+        "pair-planning-with-critic",
+        "contrast-planning-critic"
+      ],
+      "summary": "Independent review rejects the incomplete plan, drives one replan, and verifies repair of the planning fault.",
+      "tags": [
+        "fault",
+        "planning",
+        "critic",
+        "repaired"
+      ],
+      "title": "Planning omission caught by critic",
+      "type": "run"
+    },
+    {
+      "id": "worker-control-without-fallback",
+      "kind": "simulation_result",
+      "metadata": {
+        "expected_outcome": "recovered",
+        "fault": "permanent_worker_failure",
+        "fault_active": false,
+        "seed": 101,
+        "strategy": "specialists_with_critic",
+        "study": "permanent_worker_failure",
+        "study_arm": "matched_control",
+        "variant": "bot_db_contention"
+      },
+      "path": "runs/worker-control-without-fallback.json",
+      "relationship_ids": [
+        "pair-worker-without-fallback"
+      ],
+      "summary": "The target investigator succeeds on its bounded retry; no fallback capability is needed.",
+      "tags": [
+        "control",
+        "worker",
+        "no-fallback"
+      ],
+      "title": "Worker control without fallback",
+      "type": "run"
+    },
+    {
+      "id": "worker-fault-without-fallback",
+      "kind": "simulation_result",
+      "metadata": {
+        "expected_outcome": "safely_degraded",
+        "fault": "permanent_worker_failure",
+        "fault_active": true,
+        "seed": 101,
+        "strategy": "specialists_with_critic",
+        "study": "permanent_worker_failure",
+        "study_arm": "fault",
+        "variant": "bot_db_contention"
+      },
+      "path": "runs/worker-fault-without-fallback.json",
+      "relationship_ids": [
+        "pair-worker-without-fallback",
+        "contrast-worker-fallback"
+      ],
+      "summary": "The target retry fails terminally, required approval evidence is missing, and the system stops safely.",
+      "tags": [
+        "fault",
+        "worker",
+        "no-fallback",
+        "degraded"
+      ],
+      "title": "Permanent worker failure without fallback",
+      "type": "run"
+    },
+    {
+      "id": "worker-control-with-fallback",
+      "kind": "simulation_result",
+      "metadata": {
+        "expected_outcome": "recovered",
+        "fault": "permanent_worker_failure",
+        "fault_active": false,
+        "seed": 101,
+        "strategy": "specialists_with_fallback",
+        "study": "permanent_worker_failure",
+        "study_arm": "matched_control",
+        "variant": "bot_db_contention"
+      },
+      "path": "runs/worker-control-with-fallback.json",
+      "relationship_ids": [
+        "pair-worker-with-fallback"
+      ],
+      "summary": "The target investigator succeeds normally, showing that the fallback toggle has no control-arm recovery effect.",
+      "tags": [
+        "control",
+        "worker",
+        "fallback"
+      ],
+      "title": "Worker control with fallback enabled",
+      "type": "run"
+    },
+    {
+      "id": "worker-fault-with-fallback",
+      "kind": "simulation_result",
+      "metadata": {
+        "expected_outcome": "recovered",
+        "fault": "permanent_worker_failure",
+        "fault_active": true,
+        "seed": 101,
+        "strategy": "specialists_with_fallback",
+        "study": "permanent_worker_failure",
+        "study_arm": "fault",
+        "variant": "bot_db_contention"
+      },
+      "path": "runs/worker-fault-with-fallback.json",
+      "relationship_ids": [
+        "pair-worker-with-fallback",
+        "contrast-worker-fallback"
+      ],
+      "summary": "A distinct generalist is assigned once, restores linked evidence, and contains the fault while the original worker remains failed.",
+      "tags": [
+        "fault",
+        "worker",
+        "fallback",
+        "contained"
+      ],
+      "title": "Permanent worker failure with bounded fallback",
+      "type": "run"
+    },
+    {
+      "id": "budget-control-negative-control",
+      "kind": "simulation_result",
+      "metadata": {
+        "budget_condition": "exact_fit",
+        "budget_reservation_observed": false,
+        "expected_outcome": "safely_degraded",
+        "fallback_enabled": false,
+        "fault": "fallback_budget_exhaustion",
+        "fault_active": false,
+        "negative_control": true,
+        "seed": 101,
+        "shared_condition": "permanent_worker_failure",
+        "shared_worker_fault_injected": true,
+        "strategy": "specialists_with_critic",
+        "study": "fallback_budget_exhaustion",
+        "study_arm": "matched_control",
+        "study_intervention_injected": false,
+        "variant": "bot_db_contention"
+      },
+      "path": "runs/budget-control-negative-control.json",
+      "relationship_ids": [
+        "pair-budget-negative-control",
+        "contrast-budget-exact-fit-fallback"
+      ],
+      "summary": "The critic-only negative control has no fallback to admit and degrades safely under the shared permanent worker failure.",
+      "tags": [
+        "control",
+        "budget",
+        "worker",
+        "negative-control"
+      ],
+      "title": "Exact-fit capacity without fallback",
+      "type": "run"
+    },
+    {
+      "id": "budget-fault-negative-control",
+      "kind": "simulation_result",
+      "metadata": {
+        "budget_condition": "tight_capacity",
+        "budget_reservation_observed": false,
+        "expected_outcome": "safely_degraded",
+        "fallback_enabled": false,
+        "fault": "fallback_budget_exhaustion",
+        "fault_active": true,
+        "negative_control": true,
+        "seed": 101,
+        "shared_condition": "permanent_worker_failure",
+        "shared_worker_fault_injected": true,
+        "strategy": "specialists_with_critic",
+        "study": "fallback_budget_exhaustion",
+        "study_arm": "fault",
+        "study_intervention_injected": false,
+        "variant": "bot_db_contention"
+      },
+      "path": "runs/budget-fault-negative-control.json",
+      "relationship_ids": [
+        "pair-budget-negative-control",
+        "contrast-budget-tight-fallback"
+      ],
+      "summary": "The capacity intervention remains dormant when reassignment is disabled, preserving the same safe degradation.",
+      "tags": [
+        "fault",
+        "budget",
+        "worker",
+        "negative-control"
+      ],
+      "title": "Tight capacity without fallback",
+      "type": "run"
+    },
+    {
+      "id": "budget-control-with-fallback",
+      "kind": "simulation_result",
+      "metadata": {
+        "budget_condition": "exact_fit",
+        "budget_reservation_observed": true,
+        "expected_outcome": "recovered",
+        "fallback_enabled": true,
+        "fault": "fallback_budget_exhaustion",
+        "fault_active": false,
+        "negative_control": false,
+        "scoped_budget": {
+          "atomic": true,
+          "binding_dimensions": [],
+          "budget_safe": true,
+          "capacity_attempts": 1,
+          "capacity_cost_units": 4,
+          "capacity_duration_ms": 1868,
+          "capacity_tool_calls": 1,
+          "decision": "granted",
+          "fault_id": null,
+          "ledger_unchanged": false,
+          "logical_task_id": "investigate_telemetry",
+          "no_dispatch": false,
+          "request_id": "budget-request-0c9b2f02678ab783",
+          "requested_attempts": 1,
+          "requested_cost_units": 4,
+          "requested_duration_ms": 1868,
+          "requested_tool_calls": 1,
+          "reservation_id": "reservation-224b556faea4dcf9",
+          "scoped_usage_attempts": 1,
+          "scoped_usage_cost_units": 4,
+          "scoped_usage_duration_ms": 1868,
+          "scoped_usage_tool_calls": 1,
+          "skipped": false,
+          "study_fault_name": "fallback_budget_exhaustion",
+          "target_task_id": "broad_log_scan",
+          "valid": true,
+          "worker_fault_id": "160ca5511d268c6a",
+          "zero_spend": false
+        },
+        "seed": 101,
+        "shared_condition": "permanent_worker_failure",
+        "shared_worker_fault_injected": true,
+        "strategy": "specialists_with_fallback",
+        "study": "fallback_budget_exhaustion",
+        "study_arm": "matched_control",
+        "study_intervention_injected": false,
+        "variant": "bot_db_contention"
+      },
+      "path": "runs/budget-control-with-fallback.json",
+      "relationship_ids": [
+        "pair-budget-with-fallback",
+        "contrast-budget-exact-fit-fallback"
+      ],
+      "summary": "The scoped ledger atomically admits an exact-fit fallback request, allowing reassignment and verified containment.",
+      "tags": [
+        "control",
+        "budget",
+        "worker",
+        "fallback",
+        "exact-fit"
+      ],
+      "title": "Exact-fit fallback reservation",
+      "type": "run"
+    },
+    {
+      "id": "budget-fault-with-fallback",
+      "kind": "simulation_result",
+      "metadata": {
+        "budget_condition": "tight_capacity",
+        "budget_reservation_observed": true,
+        "expected_outcome": "safely_degraded",
+        "fallback_enabled": true,
+        "fault": "fallback_budget_exhaustion",
+        "fault_active": true,
+        "negative_control": false,
+        "scoped_budget": {
+          "atomic": true,
+          "binding_dimensions": [
+            "cost_units"
+          ],
+          "budget_safe": true,
+          "capacity_attempts": 1,
+          "capacity_cost_units": 3,
+          "capacity_duration_ms": 1868,
+          "capacity_tool_calls": 1,
+          "decision": "denied",
+          "fault_id": "70da19e90f04c2e8",
+          "ledger_unchanged": true,
+          "logical_task_id": "investigate_telemetry",
+          "no_dispatch": true,
+          "request_id": "budget-request-0c9b2f02678ab783",
+          "requested_attempts": 1,
+          "requested_cost_units": 4,
+          "requested_duration_ms": 1868,
+          "requested_tool_calls": 1,
+          "reservation_id": "reservation-224b556faea4dcf9",
+          "scoped_usage_attempts": 0,
+          "scoped_usage_cost_units": 0,
+          "scoped_usage_duration_ms": 0,
+          "scoped_usage_tool_calls": 0,
+          "skipped": true,
+          "study_fault_name": "fallback_budget_exhaustion",
+          "target_task_id": "broad_log_scan",
+          "valid": true,
+          "worker_fault_id": "160ca5511d268c6a",
+          "zero_spend": true
+        },
+        "seed": 101,
+        "shared_condition": "permanent_worker_failure",
+        "shared_worker_fault_injected": true,
+        "strategy": "specialists_with_fallback",
+        "study": "fallback_budget_exhaustion",
+        "study_arm": "fault",
+        "study_intervention_injected": true,
+        "variant": "bot_db_contention"
+      },
+      "path": "runs/budget-fault-with-fallback.json",
+      "relationship_ids": [
+        "pair-budget-with-fallback",
+        "contrast-budget-tight-fallback"
+      ],
+      "summary": "One missing cost unit causes atomic admission denial, zero fallback spend, and the same auditable safe-degradation path.",
+      "tags": [
+        "fault",
+        "budget",
+        "worker",
+        "fallback",
+        "zero-spend"
+      ],
+      "title": "Tight capacity refuses fallback",
+      "type": "run"
+    },
+    {
+      "id": "report-ablation",
+      "kind": "ablation_matrix",
+      "metadata": {
+        "fault": null,
+        "matrix_count": 30,
+        "matrix_start_seed": 0,
+        "study": "orchestration_ablation"
+      },
+      "path": "reports/report-ablation.json",
+      "relationship_ids": [],
+      "summary": "Aggregate effects of the five core orchestration presets.",
+      "tags": [
+        "report",
+        "ablation",
+        "aggregate"
+      ],
+      "title": "Orchestration feature ablation",
+      "type": "report"
+    },
+    {
+      "id": "report-planning-omission",
+      "kind": "fault_matrix",
+      "metadata": {
+        "fault": "planning_omission",
+        "matrix_count": 30,
+        "matrix_start_seed": 0,
+        "study": "planning_omission"
+      },
+      "path": "reports/report-planning-omission.json",
+      "relationship_ids": [],
+      "summary": "Aggregate matched-control effects and the isolated critic contrast.",
+      "tags": [
+        "report",
+        "fault-matrix",
+        "planning",
+        "critic"
+      ],
+      "title": "Planning omission matrix",
+      "type": "report"
+    },
+    {
+      "id": "report-permanent-worker-failure",
+      "kind": "fault_matrix",
+      "metadata": {
+        "fault": "permanent_worker_failure",
+        "matrix_count": 30,
+        "matrix_start_seed": 0,
+        "study": "permanent_worker_failure"
+      },
+      "path": "reports/report-permanent-worker-failure.json",
+      "relationship_ids": [],
+      "summary": "Aggregate matched-control effects and the isolated fallback contrast.",
+      "tags": [
+        "report",
+        "fault-matrix",
+        "worker",
+        "fallback"
+      ],
+      "title": "Permanent worker failure matrix",
+      "type": "report"
+    },
+    {
+      "id": "report-fallback-budget-exhaustion",
+      "kind": "fault_matrix",
+      "metadata": {
+        "fault": "fallback_budget_exhaustion",
+        "matrix_count": 30,
+        "matrix_start_seed": 0,
+        "study": "fallback_budget_exhaustion"
+      },
+      "path": "reports/report-fallback-budget-exhaustion.json",
+      "relationship_ids": [],
+      "summary": "Aggregate exact-fit and tight-capacity admission effects with critic-only negative controls.",
+      "tags": [
+        "report",
+        "fault-matrix",
+        "budget",
+        "fallback",
+        "atomic"
+      ],
+      "title": "Fallback budget exhaustion matrix",
+      "type": "report"
+    }
+  ],
+  "default_artifact_id": "clean-full-orchestration",
+  "kind": "aurora_run_explorer",
+  "metadata": {
+    "curated_seed": 101,
+    "curated_variant": "bot_db_contention",
+    "matrix_count": 30,
+    "matrix_start_seed": 0
+  },
+  "relationships": [
+    {
+      "id": "pair-planning-without-critic",
+      "metadata": {
+        "enabled": false,
+        "mechanism": "independent_critic"
+      },
+      "source_artifact_id": "planning-control-without-critic",
+      "target_artifact_id": "planning-fault-without-critic",
+      "type": "matched_control_for"
+    },
+    {
+      "id": "pair-planning-with-critic",
+      "metadata": {
+        "enabled": true,
+        "mechanism": "independent_critic"
+      },
+      "source_artifact_id": "planning-control-with-critic",
+      "target_artifact_id": "planning-fault-with-critic",
+      "type": "matched_control_for"
+    },
+    {
+      "id": "contrast-planning-critic",
+      "metadata": {
+        "mechanism": "independent_critic",
+        "source_enabled": false,
+        "target_enabled": true
+      },
+      "source_artifact_id": "planning-fault-without-critic",
+      "target_artifact_id": "planning-fault-with-critic",
+      "type": "mechanism_contrast"
+    },
+    {
+      "id": "pair-worker-without-fallback",
+      "metadata": {
+        "enabled": false,
+        "mechanism": "failure_reassignment"
+      },
+      "source_artifact_id": "worker-control-without-fallback",
+      "target_artifact_id": "worker-fault-without-fallback",
+      "type": "matched_control_for"
+    },
+    {
+      "id": "pair-worker-with-fallback",
+      "metadata": {
+        "enabled": true,
+        "mechanism": "failure_reassignment"
+      },
+      "source_artifact_id": "worker-control-with-fallback",
+      "target_artifact_id": "worker-fault-with-fallback",
+      "type": "matched_control_for"
+    },
+    {
+      "id": "contrast-worker-fallback",
+      "metadata": {
+        "mechanism": "failure_reassignment",
+        "source_enabled": false,
+        "target_enabled": true
+      },
+      "source_artifact_id": "worker-fault-without-fallback",
+      "target_artifact_id": "worker-fault-with-fallback",
+      "type": "mechanism_contrast"
+    },
+    {
+      "id": "pair-budget-negative-control",
+      "metadata": {
+        "fallback_enabled": false,
+        "mechanism": "scoped_fallback_capacity"
+      },
+      "source_artifact_id": "budget-control-negative-control",
+      "target_artifact_id": "budget-fault-negative-control",
+      "type": "matched_control_for"
+    },
+    {
+      "id": "pair-budget-with-fallback",
+      "metadata": {
+        "fallback_enabled": true,
+        "mechanism": "scoped_fallback_capacity"
+      },
+      "source_artifact_id": "budget-control-with-fallback",
+      "target_artifact_id": "budget-fault-with-fallback",
+      "type": "matched_control_for"
+    },
+    {
+      "id": "contrast-budget-exact-fit-fallback",
+      "metadata": {
+        "budget_condition": "exact_fit",
+        "mechanism": "failure_reassignment",
+        "source_enabled": false,
+        "target_enabled": true
+      },
+      "source_artifact_id": "budget-control-negative-control",
+      "target_artifact_id": "budget-control-with-fallback",
+      "type": "mechanism_contrast"
+    },
+    {
+      "id": "contrast-budget-tight-fallback",
+      "metadata": {
+        "budget_condition": "tight_capacity",
+        "mechanism": "failure_reassignment",
+        "source_enabled": false,
+        "target_enabled": true
+      },
+      "source_artifact_id": "budget-fault-negative-control",
+      "target_artifact_id": "budget-fault-with-fallback",
+      "type": "mechanism_contrast"
+    }
+  ],
+  "schema_version": "1.0.0",
+  "stories": [
+    {
+      "artifact_ids": [
+        "clean-full-orchestration",
+        "report-ablation"
+      ],
+      "id": "clean-orchestration",
+      "kind": "single_run",
+      "metadata": {
+        "build_rationale": "We built this first to show the complete, desired process from problem to proven recovery. It gives every later demonstration a clear reference point.",
+        "business_context": "A customer-facing incident can involve several business systems at once. The response team needs one coordinated view before it changes anything.",
+        "business_value": "This approach shortens the investigation while keeping important safeguards in place. It reduces guesswork, blocks unsafe changes, and prevents the team from declaring victory too early.",
+        "everyday_analogy": "It is like an emergency team where scouts report what they see, a supervisor checks the plan, and an inspector confirms the repair worked.",
+        "exact_steps": [
+          {
+            "explanation": "Four helpers check service data, the latest software release, payment records, and signs of abuse; an unnecessary wider search is cancelled.",
+            "label": "Split the search"
+          },
+          {
+            "explanation": "A reviewer finds that the first plan misses part of the problem, so the coordinator adds the missing fixes.",
+            "label": "Check the plan"
+          },
+          {
+            "explanation": "Two unsafe suggestions are refused, while four carefully limited fixes are approved and performed in order.",
+            "label": "Allow safe actions"
+          },
+          {
+            "explanation": "Two later health checks confirm that checkout and payments are working and that no extra inventory was sold.",
+            "label": "Prove recovery"
+          }
+        ],
+        "focus": "orchestration_baseline",
+        "simple_explanation": "Several software helpers investigate a checkout and payment problem at the same time. A coordinator joins their findings, checks the plan, runs only approved fixes, and confirms that the service recovered.",
+        "what_is_being_tested": "Whether several specialist agents can investigate in parallel, combine their findings, obtain approval, take action, and confirm recovery.",
+        "what_to_watch": "Watch the specialist tasks finish in parallel, evidence feed the decision, approval come before action, and verification close the incident.",
+        "why_it_matters": "Fast coordination is useful only when decisions remain traceable and the business can see that the fix worked."
+      },
+      "relationship_ids": [],
+      "summary": "Follow parallel investigations, one approved response, and two health checks that confirm recovery.",
+      "title": "How a coordinated incident response should work"
+    },
+    {
+      "artifact_ids": [
+        "planning-control-without-critic",
+        "planning-fault-without-critic",
+        "planning-control-with-critic",
+        "planning-fault-with-critic",
+        "report-planning-omission"
+      ],
+      "id": "planning-critic-contrast",
+      "kind": "matched_mechanism_contrast",
+      "metadata": {
+        "build_rationale": "We keep the incident the same and change only whether review is present. This makes it clear that the better result comes from the independent check, not from easier circumstances.",
+        "business_context": "A response plan can look complete while leaving out one action needed to fix the underlying problem.",
+        "business_value": "A second set of eyes can prevent a confident but incomplete response from reaching customers. The comparison also shows that a good plan passes review without an unnecessary rejection or rewrite.",
+        "everyday_analogy": "It is like asking a second person to check that every ingredient is on the shopping list before cooking begins.",
+        "exact_steps": [
+          {
+            "explanation": "The same incident receives one complete plan and one plan with a necessary step removed.",
+            "label": "Create matching cases"
+          },
+          {
+            "explanation": "Without a second check, the incomplete plan moves forward and the service does not fully recover.",
+            "label": "Try no reviewer"
+          },
+          {
+            "explanation": "A separate helper rejects the incomplete plan once and asks the coordinator to repair it.",
+            "label": "Add one reviewer"
+          },
+          {
+            "explanation": "The repaired plan restores service, while an already complete plan continues without unnecessary delay.",
+            "label": "Compare the results"
+          }
+        ],
+        "mechanism": "independent_critic",
+        "simple_explanation": "One version of the response plan is complete, while another is missing an important fix. We run both versions with and without a separate reviewer to see whether the reviewer catches the mistake.",
+        "study": "planning_omission",
+        "what_is_being_tested": "Whether a separate reviewer catches the missing step before execution. Here, an independent critic is simply a second agent reviewing a plan it did not write.",
+        "what_to_watch": "Compare the same omission with and without the reviewer. The reviewer rejects the incomplete plan once, prompts a correction, and stays quiet when the plan is already complete.",
+        "why_it_matters": "A missed step can turn a confident response into an incomplete fix. Independent review should improve reliability without slowing down plans that are already correct."
+      },
+      "relationship_ids": [
+        "pair-planning-without-critic",
+        "pair-planning-with-critic",
+        "contrast-planning-critic"
+      ],
+      "summary": "Compare the response with the reviewer off and on, both with a complete plan and with one step removed.",
+      "title": "Can an independent reviewer catch a missing step?"
+    },
+    {
+      "artifact_ids": [
+        "worker-control-without-fallback",
+        "worker-fault-without-fallback",
+        "worker-control-with-fallback",
+        "worker-fault-with-fallback",
+        "report-permanent-worker-failure"
+      ],
+      "id": "worker-fallback-contrast",
+      "kind": "matched_mechanism_contrast",
+      "metadata": {
+        "build_rationale": "We run the same specialist failure with backup turned off and on. That direct comparison shows the value of reassignment while proving that the backup remains limited and visible.",
+        "business_context": "During an incident, the specialist responsible for a critical investigation may remain unavailable even after a retry.",
+        "business_value": "The business can keep responding when one specialist is unavailable without hiding the problem or retrying forever. This creates resilience with a clear limit.",
+        "everyday_analogy": "It is like a cross-trained coworker covering one urgent assignment when the usual specialist is unexpectedly absent.",
+        "exact_steps": [
+          {
+            "explanation": "The monitoring helper fails on the first attempt and on the one allowed retry.",
+            "label": "Lose the specialist"
+          },
+          {
+            "explanation": "With backup turned off, the team lacks an important piece of evidence and cannot fully recover the service.",
+            "label": "Show no backup"
+          },
+          {
+            "explanation": "With backup turned on, a general helper gets one controlled attempt to collect the missing evidence.",
+            "label": "Allow one handoff"
+          },
+          {
+            "explanation": "The coordinator uses that replacement evidence, completes the approved response, and confirms recovery while still showing the original failure.",
+            "label": "Finish and verify"
+          }
+        ],
+        "mechanism": "failure_reassignment",
+        "simple_explanation": "The helper checking the service's warning signs becomes unavailable and still fails when tried again. We compare continuing without that missing information with giving one backup helper a tightly limited chance to finish that investigation.",
+        "study": "permanent_worker_failure",
+        "what_is_being_tested": "Whether one limited reassignment to a generalist can replace the missing evidence. Here, fallback means a designated backup gets one controlled attempt.",
+        "what_to_watch": "Compare the same worker loss with fallback off and on. With fallback on, the original worker remains failed while the backup restores the evidence needed for a verified recovery.",
+        "why_it_matters": "The response should keep moving when one specialist is lost, but it must not hide the failure or allow unlimited retries."
+      },
+      "relationship_ids": [
+        "pair-worker-without-fallback",
+        "pair-worker-with-fallback",
+        "contrast-worker-fallback"
+      ],
+      "summary": "Compare the same specialist outage with backup reassignment off and on.",
+      "title": "Can a backup agent keep the response moving when a specialist fails?"
+    },
+    {
+      "artifact_ids": [
+        "budget-control-negative-control",
+        "budget-fault-negative-control",
+        "budget-control-with-fallback",
+        "budget-fault-with-fallback",
+        "report-fallback-budget-exhaustion"
+      ],
+      "id": "fallback-budget-contrast",
+      "kind": "factorial_capacity_contrast",
+      "metadata": {
+        "build_rationale": "The two limits differ by only one unit, making the decision boundary easy to see. Matching runs with backup turned off show that the limit changes nothing when no backup work is requested.",
+        "business_context": "A backup action can be available but still exceed the money or capacity set aside for it.",
+        "business_value": "The system does not start work it cannot afford to finish and does not quietly exceed its limit. Leaders receive a predictable cost boundary and a clear record of why work proceeded or stopped.",
+        "everyday_analogy": "It works like a purchase that is approved only when the full amount is available, without taking a partial payment first.",
+        "exact_steps": [
+          {
+            "explanation": "One run receives four available units, while the matching run receives three.",
+            "label": "Set two limits"
+          },
+          {
+            "explanation": "The system determines that the entire backup attempt will require four units.",
+            "label": "Price the backup"
+          },
+          {
+            "explanation": "With four units, it reserves the full amount and begins; with three, it refuses before assigning work or using any resources.",
+            "label": "Decide before spending"
+          },
+          {
+            "explanation": "The full-limit run recovers, while the smaller-limit run stops safely with zero backup spending and a clear explanation.",
+            "label": "Record the outcome"
+          }
+        ],
+        "mechanism": "scoped_fallback_capacity",
+        "shared_condition": "permanent_worker_failure",
+        "simple_explanation": "The backup job needs four effort units, a simple stand-in for money or computer capacity. We give it either all four units or only three to prove that work begins only when there is enough capacity to finish it.",
+        "study": "fallback_budget_exhaustion",
+        "what_is_being_tested": "Whether fallback starts only when its full cost fits, and is refused before any spending when capacity is one unit short.",
+        "what_to_watch": "At four cost units, the request fits and recovery proceeds. At three, the request is denied with zero fallback spend and a safe stop. Runs with no fallback stay unchanged.",
+        "why_it_matters": "A reliable system should not begin work it cannot finish or quietly exceed an agreed limit; it should stop safely and leave a clear record."
+      },
+      "relationship_ids": [
+        "pair-budget-negative-control",
+        "pair-budget-with-fallback",
+        "contrast-budget-exact-fit-fallback",
+        "contrast-budget-tight-fallback"
+      ],
+      "summary": "Compare a backup request that fits the resource limit with one that is one unit too large, plus two runs with backup disabled.",
+      "title": "Will the system stop safely when backup work exceeds the limit?"
+    }
+  ],
+  "summary": "Deterministic runs and matched experiments for exploring agent orchestration, governance, fault detection, and containment.",
+  "title": "Aurora Agent Orchestration Lab",
+  "type": "showcase_manifest"
+}

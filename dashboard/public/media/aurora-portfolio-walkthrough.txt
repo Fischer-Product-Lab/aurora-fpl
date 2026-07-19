@@ -1,0 +1,9 @@
+Aurora is a test lab for the machinery around AI agents. Instead of asking whether an agent can answer once, it asks what should happen when part of the workflow goes wrong.
+
+The demo uses a fictional flash-sale outage. Four specialists investigate telemetry, releases, payments, and security. Their findings enter an append-only evidence board. A planner proposes a response, an independent reviewer can challenge a missing step, scoped approval controls any simulated change, and health checks decide whether recovery is real.
+
+Three matched studies show why this control plane matters. In the plan-review test, the reviewer rescued all thirty deliberately incomplete plans. In the backup-continuity test, one bounded reassignment recovered all thirty runs with an unavailable specialist. In the resource-limit test, a complete four-unit budget recovered, while a three-unit budget stopped all thirty runs before dispatch and spent nothing.
+
+Choose a scenario on the left, compare its conditions, then open the timeline, evidence, approvals, health checks, resource limits, or audit log. Every metric is rebuilt from ordered events, so you can inspect the proof behind the result.
+
+Aurora is intentionally deterministic and scripted, so it shows control-plane behavior, not general model reliability. The next step is one model-backed adapter, with prompts, tokens, latency, parse failures, and replay data recorded under the same guardrails.

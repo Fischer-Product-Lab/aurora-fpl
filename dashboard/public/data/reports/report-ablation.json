@@ -1,0 +1,128 @@
+{
+  "data": {
+    "aggregates": [
+      {
+        "confirmed_recovery_samples": 30,
+        "first_slo_pass_samples": 30,
+        "last_action_samples": 30,
+        "mean_confirmed_recovery_ms": 71455.5,
+        "mean_cost_units": 17.0,
+        "mean_first_slo_pass_ms": 41455.5,
+        "mean_last_action_ms": 11455.5,
+        "mean_score": 95.5,
+        "mean_tool_calls": 6.0,
+        "mean_total_ms": 71706.5,
+        "minimum_score": 95.5,
+        "runs": 30,
+        "strategy": "sequential_generalist",
+        "success_rate": 100.0
+      },
+      {
+        "confirmed_recovery_samples": 30,
+        "first_slo_pass_samples": 30,
+        "last_action_samples": 30,
+        "mean_confirmed_recovery_ms": 67642.43,
+        "mean_cost_units": 17.0,
+        "mean_first_slo_pass_ms": 37642.43,
+        "mean_last_action_ms": 7642.43,
+        "mean_score": 97.5,
+        "mean_tool_calls": 6.0,
+        "mean_total_ms": 67893.43,
+        "minimum_score": 97.5,
+        "runs": 30,
+        "strategy": "parallel_generalist",
+        "success_rate": 100.0
+      },
+      {
+        "confirmed_recovery_samples": 30,
+        "first_slo_pass_samples": 30,
+        "last_action_samples": 30,
+        "mean_confirmed_recovery_ms": 67642.43,
+        "mean_cost_units": 17.0,
+        "mean_first_slo_pass_ms": 37642.43,
+        "mean_last_action_ms": 7642.43,
+        "mean_score": 97.5,
+        "mean_tool_calls": 6.0,
+        "mean_total_ms": 67893.43,
+        "minimum_score": 97.5,
+        "runs": 30,
+        "strategy": "specialists_no_critic",
+        "success_rate": 100.0
+      },
+      {
+        "confirmed_recovery_samples": 30,
+        "first_slo_pass_samples": 30,
+        "last_action_samples": 30,
+        "mean_confirmed_recovery_ms": 68392.43,
+        "mean_cost_units": 24.0,
+        "mean_first_slo_pass_ms": 38392.43,
+        "mean_last_action_ms": 8392.43,
+        "mean_score": 99.0,
+        "mean_tool_calls": 6.0,
+        "mean_total_ms": 68643.43,
+        "minimum_score": 99.0,
+        "runs": 30,
+        "strategy": "specialists_with_critic",
+        "success_rate": 100.0
+      },
+      {
+        "confirmed_recovery_samples": 30,
+        "first_slo_pass_samples": 30,
+        "last_action_samples": 30,
+        "mean_confirmed_recovery_ms": 66393.27,
+        "mean_cost_units": 20.0,
+        "mean_first_slo_pass_ms": 36393.27,
+        "mean_last_action_ms": 6393.27,
+        "mean_score": 100.0,
+        "mean_tool_calls": 5.0,
+        "mean_total_ms": 66644.27,
+        "minimum_score": 100.0,
+        "runs": 30,
+        "strategy": "full_orchestration",
+        "success_rate": 100.0
+      }
+    ],
+    "count": 30,
+    "preset_order": [
+      "sequential_generalist",
+      "parallel_generalist",
+      "specialists_no_critic",
+      "specialists_with_critic",
+      "full_orchestration"
+    ],
+    "start_seed": 0,
+    "variant_counts": [
+      [
+        "bot_db_contention",
+        12
+      ],
+      [
+        "regional_gateway_degradation",
+        13
+      ],
+      [
+        "seat_cache_stampede",
+        5
+      ]
+    ],
+    "variant_filter": null
+  },
+  "id": "report-ablation",
+  "kind": "ablation_matrix",
+  "metadata": {
+    "fault": null,
+    "matrix_count": 30,
+    "matrix_start_seed": 0,
+    "study": "orchestration_ablation"
+  },
+  "relationship_ids": [],
+  "schema_version": "1.0.0",
+  "summary": "Aggregate effects of the five core orchestration presets.",
+  "tags": [
+    "report",
+    "ablation",
+    "aggregate"
+  ],
+  "title": "Orchestration feature ablation",
+  "type": "report"
+}
