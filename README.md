@@ -6,7 +6,7 @@ longer fits its budget. A Python simulator produces auditable traces; a guided
 web explorer translates those traces into decisions, evidence, safeguards, and
 business outcomes.
 
-**[Open the public Run Explorer](https://aurora-agent-run-explorer.t-fischer2.chatgpt.site/)**
+**[Open the public Run Explorer](https://aurora-fpl.vercel.app/)**
 · [Follow the guided experiments](docs/walkthrough.md)
 · [Read the case study](docs/case-study.md)
 · [Inspect the architecture](docs/architecture.md)

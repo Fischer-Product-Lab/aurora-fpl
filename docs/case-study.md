@@ -1,6 +1,6 @@
 # Aurora Agent Orchestration Lab — case study
 
-[Open the public Run Explorer](https://aurora-agent-run-explorer.t-fischer2.chatgpt.site/)
+[Open the public Run Explorer](https://aurora-fpl.vercel.app/)
 
 ## In one sentence
 

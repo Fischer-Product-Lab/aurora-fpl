@@ -4,7 +4,7 @@ import "./globals.css";
 const vercelProductionHost = process.env.VERCEL_PROJECT_PRODUCTION_URL;
 const publicSiteUrl = vercelProductionHost
   ? `https://${vercelProductionHost}`
-  : "https://aurora-agent-run-explorer.t-fischer2.chatgpt.site";
+  : "https://aurora-fpl.vercel.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(publicSiteUrl),
