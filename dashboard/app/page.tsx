@@ -454,50 +454,69 @@ const PORTFOLIO_TOUR_CUES = [
   { at: 60.62, time: "01:01", label: "Limits and takeaway" },
 ];
 
-const PORTFOLIO_TOUR_AUDIO = "/media/aurora-portfolio-walkthrough.wav";
+const PORTFOLIO_TOUR_AUDIO = "/media/aurora-portfolio-walkthrough-297271fb.wav";
+
+type NarrationStatus = "idle" | "loading" | "ready" | "unavailable";
 
 function PortfolioCaseStudy() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioObjectUrlRef = useRef<string | null>(null);
+  const audioLoadRef = useRef<Promise<boolean> | null>(null);
+  const mountedRef = useRef(true);
   const [activeCue, setActiveCue] = useState(0);
-  const [audioSrc, setAudioSrc] = useState<string>();
-  const [chapterReady, setChapterReady] = useState(false);
+  const [narrationStatus, setNarrationStatus] = useState<NarrationStatus>("idle");
 
   useEffect(() => {
-    let active = true;
-    let objectUrl: string | undefined;
+    return () => {
+      mountedRef.current = false;
+      if (audioObjectUrlRef.current) URL.revokeObjectURL(audioObjectUrlRef.current);
+    };
+  }, []);
 
-    async function prepareSeekableAudio() {
+  async function loadNarration() {
+    if (audioObjectUrlRef.current) return true;
+    if (audioLoadRef.current) return audioLoadRef.current;
+
+    const load = (async () => {
+      setNarrationStatus("loading");
       try {
         const response = await fetch(PORTFOLIO_TOUR_AUDIO);
         if (!response.ok) throw new Error(`Narration request failed: ${response.status}`);
-        objectUrl = URL.createObjectURL(await response.blob());
-        if (!active) {
+        const objectUrl = URL.createObjectURL(await response.blob());
+        if (!mountedRef.current || !audioRef.current) {
           URL.revokeObjectURL(objectUrl);
-          return;
+          return false;
         }
-        setAudioSrc(objectUrl);
-        setChapterReady(true);
+        audioObjectUrlRef.current = objectUrl;
+        audioRef.current.src = objectUrl;
+        audioRef.current.load();
+        setNarrationStatus("ready");
+        return true;
       } catch {
-        if (active) setAudioSrc(PORTFOLIO_TOUR_AUDIO);
+        if (mountedRef.current) setNarrationStatus("unavailable");
+        return false;
       }
-    }
+    })();
 
-    void prepareSeekableAudio();
-    return () => {
-      active = false;
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
-    };
-  }, []);
+    audioLoadRef.current = load;
+    const loaded = await load;
+    if (!loaded) audioLoadRef.current = null;
+    return loaded;
+  }
 
   function syncCue(currentTime: number) {
     const nextCue = PORTFOLIO_TOUR_CUES.findLastIndex((cue) => currentTime >= cue.at);
     setActiveCue(Math.max(0, nextCue));
   }
 
-  function playFrom(at: number) {
-    if (!audioRef.current) return;
+  async function playFrom(at: number) {
+    if (!(await loadNarration()) || !audioRef.current) return;
     audioRef.current.currentTime = at;
-    void audioRef.current.play();
+    try {
+      await audioRef.current.play();
+    } catch {
+      // Native controls remain available when browser autoplay policy intervenes.
+    }
   }
 
   return (
@@ -529,23 +548,31 @@ function PortfolioCaseStudy() {
       <div className="narrated-tour">
         <div className="narrated-tour-heading">
           <div><span className="eyebrow">Quick orientation</span><h3>Listen to the 81-second walkthrough</h3></div>
-          <p>Press play, then use the time markers to jump to the part you want to show. <a href="/media/aurora-portfolio-walkthrough.txt">Read the transcript.</a></p>
+          <p>Load the narration when you are ready to listen, then use the time markers to jump around. <a href="/media/aurora-portfolio-walkthrough.txt">Read the transcript.</a></p>
+        </div>
+        <div className="narration-loader" aria-live="polite">
+          {narrationStatus !== "ready" && (
+            <button disabled={narrationStatus === "loading"} onClick={() => void loadNarration()} type="button">
+              {narrationStatus === "loading" ? "Loading narration…" : narrationStatus === "unavailable" ? "Try loading narration again" : "Load narration"}
+            </button>
+          )}
+          <span>{narrationStatus === "ready" ? "Narration ready. Press play or choose a chapter." : narrationStatus === "unavailable" ? "The audio could not be loaded. The transcript remains available." : "Audio downloads only when requested."}</span>
         </div>
         <audio
+          aria-label="Narrated portfolio walkthrough"
           controls
           onEnded={() => setActiveCue(0)}
           onTimeUpdate={(event) => syncCue(event.currentTarget.currentTime)}
-          preload="metadata"
+          preload="none"
           ref={audioRef}
-          aria-busy={!audioSrc}
-          src={audioSrc}
+          aria-busy={narrationStatus === "loading"}
         >
           <track default kind="captions" label="English" src="/media/aurora-portfolio-walkthrough.vtt" srcLang="en" />
         </audio>
         <ol className="tour-cues">
           {PORTFOLIO_TOUR_CUES.map((cue, index) => (
             <li key={cue.time} data-active={index === activeCue}>
-              <button disabled={!chapterReady} onClick={() => playFrom(cue.at)} type="button"><time>{cue.time}</time><span>{cue.label}</span></button>
+              <button disabled={narrationStatus !== "ready"} onClick={() => void playFrom(cue.at)} type="button"><time>{cue.time}</time><span>{cue.label}</span></button>
             </li>
           ))}
         </ol>

@@ -1,4 +1,4 @@
-import { access, cp, mkdir, rm } from "node:fs/promises";
+import { access, cp, mkdir, rm, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import type { Plugin } from "vite";
 
@@ -40,6 +40,37 @@ export function sites(): Plugin {
           recursive: true,
         });
       }
+
+      await writeFile(
+        resolve(root, "dist", "client", "_headers"),
+        [
+          "# Cache content-hashed assets immutably",
+          "/assets/*",
+          "  Cache-Control: public, max-age=31536000, immutable",
+          "  X-Content-Type-Options: nosniff",
+          "",
+          "# Security and cache hardening for direct static-asset responses",
+          "/*",
+          "  Strict-Transport-Security: max-age=31536000",
+          "  X-Content-Type-Options: nosniff",
+          "  Referrer-Policy: no-referrer",
+          "  Permissions-Policy: camera=(), geolocation=(), microphone=()",
+          "",
+          "/media/*",
+          "  Cross-Origin-Resource-Policy: same-origin",
+          "",
+          "/media/aurora-portfolio-walkthrough-297271fb.wav",
+          "  Cache-Control: public, max-age=31536000, immutable",
+          "",
+          "/data/*",
+          "  Cross-Origin-Resource-Policy: same-origin",
+          "",
+          "/fonts/*",
+          "  Cross-Origin-Resource-Policy: same-origin",
+          "",
+        ].join("\n"),
+        "utf8",
+      );
     },
   };
 }

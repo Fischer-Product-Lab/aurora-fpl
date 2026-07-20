@@ -20,7 +20,10 @@ test("server-renders the Aurora explorer shell", async () => {
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
   assert.match(response.headers.get("content-security-policy") ?? "", /default-src 'self'/);
   assert.match(response.headers.get("content-security-policy") ?? "", /media-src 'self' blob:/);
+  assert.match(response.headers.get("content-security-policy") ?? "", /script-src-attr 'none'/);
   assert.equal(response.headers.get("x-frame-options"), "DENY");
+  assert.equal(response.headers.get("strict-transport-security"), "max-age=31536000");
+  assert.equal(response.headers.get("cross-origin-opener-policy"), "same-origin");
 
   const html = await response.text();
   assert.match(html, /<title>Aurora Run Explorer \| Fischer Product Lab<\/title>/i);
@@ -159,21 +162,39 @@ test("starter preview dependencies are fully removed", async () => {
 });
 
 test("ElevenLabs narration assets and portfolio copy stay aligned", async () => {
-  const [page, transcript, captions, audio] = await Promise.all([
+  const [page, transcript, captions, audio, headers] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../public/media/aurora-portfolio-walkthrough.txt", import.meta.url), "utf8"),
     readFile(new URL("../public/media/aurora-portfolio-walkthrough.vtt", import.meta.url), "utf8"),
-    readFile(new URL("../public/media/aurora-portfolio-walkthrough.wav", import.meta.url)),
+    readFile(new URL("../public/media/aurora-portfolio-walkthrough-297271fb.wav", import.meta.url)),
+    readFile(new URL("../dist/client/_headers", import.meta.url), "utf8"),
   ]);
 
   assert.match(page, /81-second walkthrough/);
-  assert.match(page, /aurora-portfolio-walkthrough\.wav/);
+  assert.match(page, /aurora-portfolio-walkthrough-297271fb\.wav/);
   assert.match(page, /URL\.createObjectURL/);
-  assert.match(page, /chapterReady/);
+  assert.match(page, /Load narration/);
+  assert.match(page, /preload="none"/);
+  assert.doesNotMatch(page, /void prepareSeekableAudio/);
   assert.doesNotMatch(page, /77-second walkthrough|aurora-portfolio-walkthrough\.mp3/);
   assert.match(page, /Limits and takeaway/);
   assert.match(transcript, /reliable AI is not just a smart model/i);
   assert.doesNotMatch(transcript, /The next step is one model-backed adapter/i);
   assert.match(captions, /00:01:20\.758/);
   assert.ok(audio.byteLength > 3_000_000);
+  assert.match(headers, /aurora-portfolio-walkthrough-297271fb\.wav[\s\S]*max-age=31536000, immutable/);
+  assert.equal((headers.match(/# Security and cache hardening/g) ?? []).length, 1);
+});
+
+test("unused image optimization route is disabled", async () => {
+  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
+  workerUrl.searchParams.set("image-test", `${process.pid}-${Date.now()}`);
+  const { default: worker } = await import(workerUrl.href);
+  const response = await worker.fetch(
+    new Request("http://localhost/_vinext/image?url=/og.png&w=640&q=75"),
+    { ASSETS: { fetch: async () => new Response("image") } },
+    { waitUntil() {}, passThroughOnException() {} },
+  );
+  assert.equal(response.status, 404);
+  assert.equal(response.headers.get("cache-control"), "no-store");
 });

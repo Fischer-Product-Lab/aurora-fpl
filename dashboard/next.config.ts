@@ -11,7 +11,12 @@ const contentSecurityPolicy = [
   "media-src 'self' blob:",
   "style-src 'self' 'unsafe-inline'",
   "script-src 'self' 'unsafe-inline'",
+  "script-src-attr 'none'",
   "connect-src 'self'",
+  "frame-src 'none'",
+  "worker-src 'none'",
+  "manifest-src 'none'",
+  "upgrade-insecure-requests",
 ].join("; ");
 
 const nextConfig: NextConfig = {
@@ -24,6 +29,8 @@ const nextConfig: NextConfig = {
           { key: "Referrer-Policy", value: "no-referrer" },
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "X-Frame-Options", value: "DENY" },
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+          { key: "Strict-Transport-Security", value: "max-age=31536000" },
           {
             key: "Permissions-Policy",
             value: "camera=(), geolocation=(), microphone=()",

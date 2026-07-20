@@ -48,6 +48,12 @@ jobs:
       - name: Install dashboard dependencies
         run: npm ci
 
+      - name: Scan public artifacts for secrets and personal data
+        run: npm run security:public
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+
       - name: Lint dashboard
         run: npm run lint
 

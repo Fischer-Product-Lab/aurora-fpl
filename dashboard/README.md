@@ -55,3 +55,11 @@ reconstructed from the trace; compact reports are never used as timeline data.
 
 The dashboard is a static reader: it does not mutate simulation state or call a
 model at runtime.
+
+## Security checks
+
+Run `npm run security:public` before publishing. The check scans text-based
+files under `public/` for credential patterns, personal contact details, local
+machine paths, and IP addresses without printing any detected value. Keep model
+recordings and real incident data outside `public/`; everything in that folder
+must be treated as openly downloadable.
