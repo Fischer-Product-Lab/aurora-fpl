@@ -16,7 +16,7 @@ Then start the dashboard:
 
 ```powershell
 cd dashboard
-npm install
+npm ci
 npm run dev
 ```
 
@@ -63,6 +63,18 @@ reconstructed from the trace; compact reports are never used as timeline data.
 
 The dashboard is a static reader: its "live" view replays immutable recorded
 events. It does not mutate simulation state or call a model at runtime.
+
+## Deployment targets
+
+The dashboard keeps two build targets from the same source:
+
+- `npm run build` produces the existing Vinext/Cloudflare Sites bundle.
+- `npm run build:vercel` produces the standard Next.js bundle used by Vercel.
+
+For a Vercel Git import, select this repository and set the project root to
+`dashboard`. The committed `vercel.json` selects the Next.js framework and the
+Vercel build command. No environment variables are required for the recorded
+simulation explorer.
 
 ## Security checks
 

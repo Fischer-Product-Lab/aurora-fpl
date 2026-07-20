@@ -23,6 +23,23 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        source: "/media/aurora-portfolio-walkthrough-297271fb.wav",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+      ...["/media/:path*", "/data/:path*", "/fonts/:path*"].map(
+        (source) => ({
+          source,
+          headers: [
+            { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
+          ],
+        }),
+      ),
+      {
         source: "/:path*",
         headers: [
           { key: "Content-Security-Policy", value: contentSecurityPolicy },

@@ -1,7 +1,13 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
+const vercelProductionHost = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+const publicSiteUrl = vercelProductionHost
+  ? `https://${vercelProductionHost}`
+  : "https://aurora-agent-run-explorer.t-fischer2.chatgpt.site";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(publicSiteUrl),
   title: "Aurora Run Explorer | Fischer Product Lab",
   description:
     "A Fischer Product Lab demonstration of deterministic agent orchestration, evidence, governance, failures, and recovery.",

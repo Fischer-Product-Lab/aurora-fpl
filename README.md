@@ -52,6 +52,11 @@ npm run dev
 Open `http://localhost:3000`. The generated showcase data is deterministic, so
 regenerating it should not create unrelated timestamp churn.
 
+The web explorer also has a standard Next.js build for Vercel. From
+`dashboard`, run `npm run build:vercel`. When importing the repository in
+Vercel, use `dashboard` as the project root; the existing Sites build remains
+available from the same source.
+
 ### Optional model-backed diagnosis
 
 The smallest probabilistic seam is implemented behind the same typed diagnosis
