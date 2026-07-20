@@ -24,7 +24,13 @@ Open `http://localhost:3000`.
 
 ## What to demonstrate
 
-- Start with the clean orchestration story for the 30-second architecture tour.
+- Choose **Watch replay** to present a recorded run as it unfolds. At 4× speed,
+  a typical 66–68 second simulation takes about 17 seconds.
+- Point out the live specialist states, plain-English "what happened / why it
+  matters" explanation, audit updates, and deliberately hidden ending.
+- Pause, scrub, change speed, or restart; switch to **Explore instantly** when
+  you want the complete result without waiting.
+- Start with the clean orchestration story for the architecture tour.
 - Compare the planning fault with and without an independent critic.
 - Compare permanent worker failure with and without bounded reassignment.
 - Use the budget story to show atomic fallback admission, exact-fit control,
@@ -43,9 +49,11 @@ npx tsc --noEmit
 npm test
 ```
 
-The rendered tests validate the server shell and every manifest reference. The
-dashboard intentionally treats event kinds as open strings so future simulator
-events remain visible through the generic trace renderer.
+The rendered tests validate the server shell and every manifest reference. Pure
+replay tests verify tied-event ordering, progressive task and evidence state,
+clock speed, outcome gating, and plain-English fallbacks. The dashboard
+intentionally treats event kinds as open strings so future simulator events
+remain visible through the generic trace renderer.
 
 ## Data contract
 
@@ -53,8 +61,8 @@ events remain visible through the generic trace renderer.
 report envelopes. Full run envelopes include the simulation result plus metrics
 reconstructed from the trace; compact reports are never used as timeline data.
 
-The dashboard is a static reader: it does not mutate simulation state or call a
-model at runtime.
+The dashboard is a static reader: its "live" view replays immutable recorded
+events. It does not mutate simulation state or call a model at runtime.
 
 ## Security checks
 

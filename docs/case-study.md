@@ -35,7 +35,9 @@ clock. Each run follows the same understandable path:
 
 A fault harness changes one condition at a time, while trace-derived metrics
 rebuild the outcome from ordered events. The web dashboard turns those traces
-into business-language stories without running the agents itself. See the
+into business-language stories without running the agents itself. Its replay
+mode progressively reveals agent activity, evidence, decisions, and health
+checks while withholding the recorded result until completion. See the
 [architecture notes](architecture.md) for the component-level design.
 
 ## Three results

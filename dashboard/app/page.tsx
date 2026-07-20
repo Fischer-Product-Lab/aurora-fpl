@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { LiveReplay, type ExperienceMode } from "./live-replay";
 
 type MetadataPairs = [string, string][];
 
@@ -645,28 +646,33 @@ function ComparisonStrip({
   runs,
   selectedId,
   onSelect,
+  concealSelectedOutcome = false,
 }: {
   runs: (ArtifactEnvelope & { data: SimulationResult; metrics: RunMetrics })[];
   selectedId: string;
   onSelect: (id: string) => void;
+  concealSelectedOutcome?: boolean;
 }) {
   return (
     <div className="comparison-strip" aria-label="Runs in this story">
-      {runs.map((run) => (
-        <button
-          className="comparison-run"
-          data-selected={run.id === selectedId}
-          key={run.id}
-          onClick={() => onSelect(run.id)}
-          type="button"
-        >
-          <span className={`status-dot ${outcomeTone(run)}`} aria-hidden="true" />
-          <span className="comparison-copy">
-            <strong>{runConditionLabel(run)}</strong>
-          </span>
-          <span className={`outcome-chip ${outcomeTone(run)}`}>{outcomeLabel(run)}</span>
-        </button>
-      ))}
+      {runs.map((run) => {
+        const outcomeHidden = concealSelectedOutcome && run.id === selectedId;
+        return (
+          <button
+            className="comparison-run"
+            data-selected={run.id === selectedId}
+            key={run.id}
+            onClick={() => onSelect(run.id)}
+            type="button"
+          >
+            <span className={`status-dot ${outcomeHidden ? "pending" : outcomeTone(run)}`} aria-hidden="true" />
+            <span className="comparison-copy">
+              <strong>{runConditionLabel(run)}</strong>
+            </span>
+            <span className={`outcome-chip ${outcomeHidden ? "pending" : outcomeTone(run)}`}>{outcomeHidden ? "Outcome hidden" : outcomeLabel(run)}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -1014,6 +1020,8 @@ export default function Home() {
   const [selectedArtifactId, setSelectedArtifactId] = useState("");
   const [panel, setPanel] = useState<Panel>("timeline");
   const [selectedEvent, setSelectedEvent] = useState<TraceEvent | null>(null);
+  const [experienceMode, setExperienceMode] = useState<ExperienceMode>("explore");
+  const [replayComplete, setReplayComplete] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -1068,11 +1076,13 @@ export default function Home() {
   }
 
   function chooseStory(nextStory: string) {
+    setReplayComplete(false);
     setStoryId(nextStory);
     updateLocation(nextStory);
   }
 
   function chooseRun(nextRun: string) {
+    setReplayComplete(false);
     setSelectedArtifactId(nextRun);
     setSelectedEvent(null);
     updateLocation(storyId, nextRun);
@@ -1083,6 +1093,7 @@ export default function Home() {
   if (!manifest || !story || !selectedRun) return <main className="error-state"><h1>Aurora Run Explorer</h1><p>No curated run is available.</p></main>;
 
   const totalScore = scoreTotal(selectedRun.data.score);
+  const revealRunOutcome = experienceMode === "explore" || replayComplete;
 
   return (
     <main className="app-shell">
@@ -1104,34 +1115,60 @@ export default function Home() {
 
           <section className="story-hero">
             <div className="hero-copy"><span className="eyebrow">{studyLabel(story)}</span><h1>{story.title}</h1><p>{story.summary}</p></div>
-            <div className="hero-status"><span className={`outcome-chip large ${outcomeTone(selectedRun)}`}>{outcomeLabel(selectedRun)}</span><code>{selectedRun.data.run_id}</code></div>
+            <div className="hero-status"><span className={`outcome-chip large ${revealRunOutcome ? outcomeTone(selectedRun) : "pending"}`}>{revealRunOutcome ? outcomeLabel(selectedRun) : "Outcome hidden during replay"}</span><code>{selectedRun.data.run_id}</code></div>
           </section>
 
           <SimpleWalkthrough story={story} />
 
-          <ComparisonStrip runs={runs} selectedId={selectedRun.id} onSelect={chooseRun} />
+          <ComparisonStrip concealSelectedOutcome={!revealRunOutcome} runs={runs} selectedId={selectedRun.id} onSelect={chooseRun} />
+
+          <LiveReplay
+            key={selectedRun.data.run_id}
+            mode={experienceMode}
+            onCompleteChange={setReplayComplete}
+            onModeChange={setExperienceMode}
+            run={selectedRun}
+          />
 
           <section className="metric-grid" aria-label="Selected run summary">
-            <MetricCard label="Outcome" value={outcomeLabel(selectedRun)} context={outcomeContext(selectedRun)} />
-            <MetricCard label="Recovery confirmed" value={milliseconds(selectedRun.metrics.confirmed_recovery_ms)} context={`${selectedRun.metrics.verification_passes}/2 health checks passed`} />
-            <MetricCard label="Simulation score" value={`${totalScore?.toFixed(1) ?? "—"} / 100`} context={`${selectedRun.data.cost_units_used} effort units · ${selectedRun.data.tool_calls_used} external calls`} />
+            {revealRunOutcome ? (
+              <>
+                <MetricCard label="Outcome" value={outcomeLabel(selectedRun)} context={outcomeContext(selectedRun)} />
+                <MetricCard label="Recovery confirmed" value={milliseconds(selectedRun.metrics.confirmed_recovery_ms)} context={`${selectedRun.metrics.verification_passes}/2 health checks passed`} />
+                <MetricCard label="Simulation score" value={`${totalScore?.toFixed(1) ?? "—"} / 100`} context={`${selectedRun.data.cost_units_used} effort units · ${selectedRun.data.tool_calls_used} external calls`} />
+              </>
+            ) : (
+              <>
+                <MetricCard label="Outcome" value="Still unfolding" context="The final result appears only after the recorded run completes." />
+                <MetricCard label="Recovery confirmed" value="Waiting" context="Independent health checks have not finished in the replay." />
+                <MetricCard label="Simulation score" value="Hidden" context="Effort totals and score unlock with the outcome." />
+              </>
+            )}
           </section>
 
-          <nav className="panel-tabs" aria-label="Run detail views">{PANELS.map((item) => <button aria-current={panel === item.id ? "page" : undefined} key={item.id} onClick={() => { setPanel(item.id); setSelectedEvent(null); }} type="button">{item.label}</button>)}</nav>
+          {revealRunOutcome && <nav className="panel-tabs" aria-label="Run detail views">{PANELS.map((item) => <button aria-current={panel === item.id ? "page" : undefined} key={item.id} onClick={() => { setPanel(item.id); setSelectedEvent(null); }} type="button">{item.label}</button>)}</nav>}
 
           {loading && <div className="story-loading" aria-live="polite">Loading story artifacts…</div>}
-          {!loading && panel === "timeline" && <Timeline run={selectedRun} selectedEvent={selectedEvent} onSelectEvent={setSelectedEvent} />}
-          {!loading && panel === "evidence" && <EvidencePanel run={selectedRun} />}
-          {!loading && panel === "governance" && <GovernancePanel run={selectedRun} />}
-          {!loading && panel === "verification" && <VerificationPanel run={selectedRun} />}
-          {!loading && panel === "budget" && <BudgetPanel run={selectedRun} />}
-          {!loading && panel === "trace" && <TracePanel run={selectedRun} onSelectEvent={setSelectedEvent} />}
-          {!loading && panel === "trace" && selectedEvent && <EventInspector event={selectedEvent} onClose={() => setSelectedEvent(null)} />}
+          {revealRunOutcome && !loading && panel === "timeline" && <Timeline run={selectedRun} selectedEvent={selectedEvent} onSelectEvent={setSelectedEvent} />}
+          {revealRunOutcome && !loading && panel === "evidence" && <EvidencePanel run={selectedRun} />}
+          {revealRunOutcome && !loading && panel === "governance" && <GovernancePanel run={selectedRun} />}
+          {revealRunOutcome && !loading && panel === "verification" && <VerificationPanel run={selectedRun} />}
+          {revealRunOutcome && !loading && panel === "budget" && <BudgetPanel run={selectedRun} />}
+          {revealRunOutcome && !loading && panel === "trace" && <TracePanel run={selectedRun} onSelectEvent={setSelectedEvent} />}
+          {revealRunOutcome && !loading && panel === "trace" && selectedEvent && <EventInspector event={selectedEvent} onClose={() => setSelectedEvent(null)} />}
+
+          {!revealRunOutcome && (
+            <section className="replay-detail-lock" aria-label="Detailed results hidden during replay">
+              <span aria-hidden="true">?</span>
+              <div><strong>Detailed proof unlocks when the replay finishes.</strong><p>You can also choose Explore instantly above to open the timeline, evidence, approvals, health checks, resource limits, and full audit log now.</p></div>
+              <button onClick={() => setExperienceMode("explore")} type="button">Explore full result</button>
+            </section>
+          )}
 
           <footer className="app-footer"><div><strong>Aurora Agent Orchestration Lab</strong><span>A Fischer Product Lab experiment.</span><span>Deterministic studies, plus one optional model-backed diagnosis behind the same controls.</span></div><div><span>{selectedRun.data.trace.length} events</span><span>{selectedRun.data.evidence.length} evidence items</span><span>{selectedRun.data.task_results.length} tasks</span></div></footer>
         </div>
       </div>
-      <p className="sr-only" aria-live="polite">Showing {story.title}: {selectedRun.title}, outcome {outcomeLabel(selectedRun)}.</p>
+      <p className="sr-only" aria-live="polite">Showing {story.title}: {selectedRun.title}. {revealRunOutcome ? `Outcome ${outcomeLabel(selectedRun)}.` : "Outcome hidden while the recorded simulation replay is in progress."}</p>
     </main>
   );
 }

@@ -9,7 +9,7 @@
     "dev": "vinext dev",
     "build": "vinext build",
     "start": "vinext start",
-    "test": "npm run security:public && npm run build && node --test tests/rendered-html.test.mjs",
+    "test": "npm run security:public && npm run build && node --test --test-isolation=none tests/rendered-html.test.mjs tests/replay.test.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "security:public": "node scripts/scan-public-artifacts.mjs"
   },

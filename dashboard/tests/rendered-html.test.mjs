@@ -161,6 +161,35 @@ test("starter preview dependencies are fully removed", async () => {
   assert.doesNotMatch(packageJson, /react-loading-skeleton|site-creator-vinext-starter/);
 });
 
+test("simulation replay is explicit, accessible, and protects the ending", async () => {
+  const [page, replay, model, styles] = await Promise.all([
+    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/live-replay.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/replay-model.mjs", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(replay, /Recorded deterministic simulation/);
+  assert.match(replay, /Explore instantly/);
+  assert.match(replay, /Watch replay/);
+  assert.match(replay, /Start simulation replay/);
+  assert.match(replay, /"Pause"/);
+  assert.match(replay, />Restart</);
+  assert.match(replay, /const SPEEDS: ReplaySpeed\[\] = \[1, 2, 4\]/);
+  assert.match(replay, /type="range"/);
+  assert.match(replay, /aria-valuetext/);
+  assert.match(replay, /aria-live="polite"/);
+  assert.match(replay, /aria-atomic="true"/);
+  assert.match(replay, /requestAnimationFrame/);
+  assert.match(replay, /cancelAnimationFrame/);
+  assert.match(page, /revealRunOutcome/);
+  assert.match(page, /Outcome hidden during replay/);
+  assert.match(page, /Detailed proof unlocks when the replay finishes/);
+  assert.match(model, /event\.kind === "run_completed"/);
+  assert.match(styles, /@media \(prefers-reduced-motion: reduce\)[\s\S]*transition-duration: 0\.01ms/);
+  assert.doesNotMatch(replay, /live model run|real-time model/);
+});
+
 test("ElevenLabs narration assets and portfolio copy stay aligned", async () => {
   const [page, transcript, captions, audio, headers] = await Promise.all([
     readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),

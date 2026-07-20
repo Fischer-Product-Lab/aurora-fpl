@@ -88,6 +88,11 @@ checklist remain in [docs/screenshots/README.md](docs/screenshots/README.md).
 The recorded voiceover script and regeneration instructions are in the
 [ElevenLabs narration brief](docs/narration/README.md).
 
+Use **Watch replay** to see a selected trace unfold behind a virtual clock. The
+replay hides the outcome until the recorded completion event, explains each
+important step in plain language, and then unlocks the full evidence explorer.
+Use **Explore instantly** when you want to jump directly to the proof.
+
 ![Aurora dashboard overview](docs/screenshots/dashboard-overview.png)
 
 *A business-first view of one agent run, with the outcome and safeguards that
