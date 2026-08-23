@@ -2,20 +2,20 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-async function render() {
+async function render(path = "/") {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
-  workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
+  workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}-${path}`);
   const { default: worker } = await import(workerUrl.href);
 
   return worker.fetch(
-    new Request("http://localhost/", { headers: { accept: "text/html" } }),
+    new Request(`http://localhost${path}`, { headers: { accept: "text/html" } }),
     { ASSETS: { fetch: async () => new Response("Not found", { status: 404 }) } },
     { waitUntil() {}, passThroughOnException() {} },
   );
 }
 
-test("server-renders the Aurora explorer shell", async () => {
-  const response = await render();
+test("server-renders the cinematic Aurora title page", async () => {
+  const response = await render("/");
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
   assert.match(response.headers.get("content-security-policy") ?? "", /default-src 'self'/);
@@ -26,10 +26,28 @@ test("server-renders the Aurora explorer shell", async () => {
   assert.equal(response.headers.get("cross-origin-opener-policy"), "same-origin");
 
   const html = await response.text();
-  assert.match(html, /<title>Aurora Run Explorer \| Fischer Product Lab<\/title>/i);
+  assert.match(html, /<title>Aurora \| Fischer Product Lab<\/title>/i);
   assert.match(html, /og-fischer\.png/i);
-  assert.match(html, /Assembling the incident dossier/i);
+  assert.match(html, /When the specialist fails, is recovery still governed\?/);
+  assert.match(html, /Open the demo/);
+  assert.match(html, /See how it decides/);
+  assert.match(html, /marketing-grain/);
+  assert.match(html, /Permanent worker failure with bounded fallback/);
+  assert.match(html, /Recovered via backup/);
+  assert.doesNotMatch(html, /Assembling the incident dossier/i);
+  assert.doesNotMatch(html, /trusted by|Inter,|Spline|R3F/i);
   assert.doesNotMatch(html, /codex-preview|react-loading-skeleton|Your site is taking shape/i);
+});
+
+test("server-renders the Aurora explorer shell at /demo", async () => {
+  const response = await render("/demo");
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
+
+  const html = await response.text();
+  assert.match(html, /Aurora Run Explorer/i);
+  assert.match(html, /Assembling the incident dossier/i);
+  assert.doesNotMatch(html, /When the specialist fails, is recovery still governed\?/);
 });
 
 test("showcase manifest is portable and internally complete", async () => {
@@ -137,7 +155,7 @@ test("budget story preserves atomic grant and denial proof", async () => {
 
 test("starter preview dependencies are fully removed", async () => {
   const [page, packageJson] = await Promise.all([
-    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/run-explorer.tsx", import.meta.url), "utf8"),
     readFile(new URL("../package.json", import.meta.url), "utf8"),
   ]);
 
@@ -163,7 +181,7 @@ test("starter preview dependencies are fully removed", async () => {
 
 test("simulation replay is explicit, accessible, and protects the ending", async () => {
   const [page, replay, model, styles] = await Promise.all([
-    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/run-explorer.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/live-replay.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/replay-model.mjs", import.meta.url), "utf8"),
     readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
@@ -192,7 +210,7 @@ test("simulation replay is explicit, accessible, and protects the ending", async
 
 test("ElevenLabs narration assets and portfolio copy stay aligned", async () => {
   const [page, transcript, captions, audio, headers] = await Promise.all([
-    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/run-explorer.tsx", import.meta.url), "utf8"),
     readFile(new URL("../public/media/aurora-portfolio-walkthrough.txt", import.meta.url), "utf8"),
     readFile(new URL("../public/media/aurora-portfolio-walkthrough.vtt", import.meta.url), "utf8"),
     readFile(new URL("../public/media/aurora-portfolio-walkthrough-297271fb.wav", import.meta.url)),
@@ -213,6 +231,39 @@ test("ElevenLabs narration assets and portfolio copy stay aligned", async () => 
   assert.ok(audio.byteLength > 3_000_000);
   assert.match(headers, /aurora-portfolio-walkthrough-297271fb\.wav[\s\S]*max-age=31536000, immutable/);
   assert.equal((headers.match(/# Security and cache hardening/g) ?? []).length, 1);
+});
+
+test("landing steals TrustDesk register and keeps live showcase metrics", async () => {
+  const [landing, landingData, styles, nextConfig, page] = await Promise.all([
+    readFile(new URL("../app/landing.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/landing-data.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/globals.css", import.meta.url), "utf8"),
+    readFile(new URL("../next.config.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(landing, /When the specialist fails, is recovery still governed\?/);
+  assert.match(landing, /Open the demo/);
+  assert.match(landing, /See how it decides/);
+  assert.match(landing, /href="\/demo"/);
+  assert.match(landing, /href="#how-it-decides"/);
+  assert.match(landingData, /report-planning-omission\.json/);
+  assert.match(landingData, /report-permanent-worker-failure\.json/);
+  assert.match(landingData, /report-fallback-budget-exhaustion\.json/);
+  assert.match(landingData, /worker-fault-with-fallback\.json/);
+  assert.match(landingData, /fault_rescues/);
+  assert.match(landingData, /tight_budget_with_fallback_zero_spend_rate_pct/);
+  assert.doesNotMatch(landing, /trusted by|Inter|Spline|R3F|questionnaire/i);
+  assert.match(styles, /font-family: "Geist"/);
+  assert.match(styles, /geist-latin\.woff2/);
+  assert.match(styles, /#0b1220|#0B1220/);
+  assert.match(styles, /#f4efe4|#F4EFE4/);
+  assert.match(styles, /#c4a35a|#C4A35A/);
+  assert.match(styles, /marketing-grain/);
+  assert.match(styles, /marketing-light/);
+  assert.match(nextConfig, /destination: "\/demo"/);
+  assert.match(page, /redirect\(`\/demo\?/);
+  assert.match(page, /DeepLinkRedirect/);
 });
 
 test("unused image optimization route is disabled", async () => {
