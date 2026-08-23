@@ -41,8 +41,10 @@ export function sites(): Plugin {
         });
       }
 
+      const clientDirectory = resolve(root, "dist", "client");
+      await mkdir(clientDirectory, { recursive: true });
       await writeFile(
-        resolve(root, "dist", "client", "_headers"),
+        resolve(clientDirectory, "_headers"),
         [
           "# Cache content-hashed assets immutably",
           "/assets/*",
