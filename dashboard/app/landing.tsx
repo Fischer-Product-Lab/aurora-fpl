@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ProductWindow } from "./product-window";
 import type { LandingShowcase } from "./landing-data";
 
@@ -16,11 +17,11 @@ export function LandingPage({ showcase }: { showcase: LandingShowcase }) {
 
       <div className="marketing-frame">
         <header className="marketing-nav">
-          <a className="marketing-brand" href="/">
+          <Link className="marketing-brand" href="/">
             <span>Aurora</span>
             <small>Fischer Product Lab</small>
-          </a>
-          <a className="marketing-nav-link" href="/demo">Open the demo</a>
+          </Link>
+          <Link className="marketing-nav-link" href="/demo">Open the demo</Link>
         </header>
 
         <main className="marketing-main">
@@ -37,7 +38,7 @@ export function LandingPage({ showcase }: { showcase: LandingShowcase }) {
               simulator, not a production responder.
             </p>
             <div className="marketing-ctas marketing-rise marketing-rise-delay-3">
-              <a className="marketing-cta-primary" href="/demo">Open the demo</a>
+              <Link className="marketing-cta-primary" href="/demo">Open the demo</Link>
               <a className="marketing-cta-secondary" href="#how-it-decides">See how it decides</a>
             </div>
           </section>
@@ -47,12 +48,12 @@ export function LandingPage({ showcase }: { showcase: LandingShowcase }) {
             aria-label="Aurora product"
           >
             <div className="marketing-light" aria-hidden="true" />
-            <a className="marketing-product-link" href={showcase.demoHref}>
+            <Link className="marketing-product-link" href={showcase.demoHref}>
               <span className="sr-only">
                 Open the specialist-failure run in the live demo
               </span>
               <ProductWindow showcase={showcase} />
-            </a>
+            </Link>
           </section>
 
           <section className="marketing-decides" id="how-it-decides">

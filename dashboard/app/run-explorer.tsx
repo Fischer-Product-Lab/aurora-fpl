@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { LiveReplay, type ExperienceMode } from "./live-replay";
 
 type MetadataPairs = [string, string][];
@@ -1099,8 +1100,8 @@ export default function RunExplorer() {
     <main className="app-shell">
       <a className="skip-link" href="#explorer-content">Skip to run details</a>
       <header className="app-header">
-        <a className="brand-block" href="/"><span className="brand-mark" aria-hidden="true">A</span><div><strong>Aurora Run Explorer</strong><span className="eyebrow">Fischer Product Lab · Agent orchestration</span></div></a>
-        <div className="header-proof"><a href="/">Title page</a><span>Deterministic</span><span>Trace-derived</span><span>Schema v{manifest.schema_version}</span></div>
+        <Link className="brand-block" href="/"><span className="brand-mark" aria-hidden="true">A</span><div><strong>Aurora Run Explorer</strong><span className="eyebrow">Fischer Product Lab · Agent orchestration</span></div></Link>
+        <div className="header-proof"><Link href="/">Title page</Link><span>Deterministic</span><span>Trace-derived</span><span>Schema v{manifest.schema_version}</span></div>
       </header>
 
       <div className="workspace">
