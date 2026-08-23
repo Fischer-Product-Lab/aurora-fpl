@@ -12,7 +12,7 @@
     "build:vercel": "next build",
     "start": "vinext start",
     "start:vercel": "next start",
-    "test": "npm run security:public && npm run build && node --test --test-isolation=none tests/rendered-html.test.mjs tests/replay.test.mjs",
+    "test": "npm run security:public && npm run build && node --test tests/rendered-html.test.mjs tests/replay.test.mjs",
     "verify:vercel": "npm run security:public && npm run build:vercel",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "security:public": "node scripts/scan-public-artifacts.mjs"
