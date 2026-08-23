@@ -20,6 +20,22 @@ const contentSecurityPolicy = [
 ].join("; ");
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      {
+        source: "/",
+        has: [{ type: "query", key: "story" }],
+        destination: "/demo",
+        permanent: false,
+      },
+      {
+        source: "/",
+        has: [{ type: "query", key: "run" }],
+        destination: "/demo",
+        permanent: false,
+      },
+    ];
+  },
   async headers() {
     return [
       {

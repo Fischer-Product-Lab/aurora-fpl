@@ -20,7 +20,8 @@ npm ci
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Open `http://localhost:3000` for the cinematic title page. The Run Explorer
+lives at `http://localhost:3000/demo`.
 
 ## What to demonstrate
 
@@ -38,8 +39,9 @@ Open `http://localhost:3000`.
 - Open Timeline, Evidence, Governance, Verification, Budget, and Raw trace to
   move from the outcome to its underlying proof.
 
-Story and run selections are encoded in `?story=` and `?run=` parameters, so a
-specific comparison can be shared directly.
+Story and run selections are encoded in `/demo?story=` and `/demo?run=`
+parameters, so a specific comparison can be shared directly. Existing root
+deep links with those query parameters redirect to `/demo`.
 
 ## Verification
 

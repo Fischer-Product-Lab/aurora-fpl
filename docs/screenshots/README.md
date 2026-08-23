@@ -1,6 +1,6 @@
 # Portfolio screenshot plan
 
-The public [Aurora Run Explorer](https://aurora-fpl.vercel.app/)
+The public [Aurora Run Explorer](https://aurora-fpl.vercel.app/demo)
 is the source of truth. These named slots keep future screenshots stable across
 the root README, a Fischer Product Lab case study, and social posts without
 committing arbitrary work-in-progress captures.

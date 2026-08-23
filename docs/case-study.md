@@ -1,6 +1,6 @@
 # Aurora Agent Orchestration Lab — case study
 
-[Open the public Run Explorer](https://aurora-fpl.vercel.app/)
+[Open the public Run Explorer](https://aurora-fpl.vercel.app/demo)
 
 ## In one sentence
 

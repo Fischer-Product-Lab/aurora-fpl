@@ -8,13 +8,13 @@ const publicSiteUrl = vercelProductionHost
 
 export const metadata: Metadata = {
   metadataBase: new URL(publicSiteUrl),
-  title: "Aurora Run Explorer | Fischer Product Lab",
+  title: "Aurora | Fischer Product Lab",
   description:
-    "A Fischer Product Lab demonstration of deterministic agent orchestration, evidence, governance, failures, and recovery.",
+    "When the specialist fails, is recovery still governed? A Fischer Product Lab teaching simulator for investigation, controlled decisions, bounded recovery, and proof.",
   openGraph: {
-    title: "Aurora Run Explorer | Fischer Product Lab",
+    title: "Aurora | Fischer Product Lab",
     description:
-      "A Fischer Product Lab trace-driven demonstration of agent orchestration, controlled faults, governance, and recovery.",
+      "Investigate, decide, recover, and prove. A read-only Fischer Product Lab teaching simulator for governed agent recovery.",
     type: "website",
     images: [
       {
@@ -27,9 +27,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Aurora Run Explorer | Fischer Product Lab",
+    title: "Aurora | Fischer Product Lab",
     description:
-      "A Fischer Product Lab demonstration of how an orchestrated agent team handles evidence, budgets, faults, and governed recovery.",
+      "When the specialist fails, is recovery still governed? A read-only teaching simulator from Fischer Product Lab.",
     images: ["/og-fischer.png"],
   },
   icons: {
