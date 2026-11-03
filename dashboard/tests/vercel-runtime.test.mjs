@@ -13,6 +13,7 @@ test('Vercel/Next target disables the unused optimizer and preserves public asse
   const imageManifest = JSON.parse(await readFile(new URL('../.next/images-manifest.json', import.meta.url), 'utf8'));
   assert.equal(imageManifest.images.unoptimized, true);
   assert.deepEqual(imageManifest.images.remotePatterns, []);
+  assert.deepEqual(imageManifest.images.domains, []);
   const app = next({ dev: false, dir: directory, quiet: true });
   await app.prepare();
   const server = createServer(app.getRequestHandler());
@@ -55,20 +56,13 @@ test('Vercel/Next target disables the unused optimizer and preserves public asse
   assert.match(deepLink.headers.get('location') ?? '', /^\/demo\?run=worker-fault-with-fallback$/);
 });
 
-// Vercel's image pipeline is separate from the local Next request handler.
-// Keep an explicit platform rule and verify it against a hosted preview at release.
-test('Vercel routing blocks only the unused image optimizer', async () => {
+// Vercel optimization precedes app routes and is configured independently.
+test('Vercel image policy allows no local or remote optimizer sources', async () => {
   const config = JSON.parse(await readFile(new URL('../vercel.json', import.meta.url), 'utf8'));
-  const rule = config.routes[0];
-  assert.equal(rule.status, 404);
-  assert.notEqual(rule.continue, true);
-  assert.equal(rule.headers['Cache-Control'], 'no-store');
-  assert.equal(rule.methods, undefined, 'The rule must cover every HTTP method');
-  const match = new RegExp(rule.src);
-  for (const pathname of ['/_next/image', '/_next/image/', '/_next/image/unused']) {
-    assert.ok(match.test(pathname), pathname);
-  }
-  for (const pathname of ['/', '/demo', '/og.png', '/_next/static/chunks/app.js', '/_next/image-other']) {
-    assert.equal(match.test(pathname), false, pathname);
-  }
+  assert.deepEqual(config.images.localPatterns, []);
+  assert.deepEqual(config.images.remotePatterns, []);
+  assert.deepEqual(config.images.domains, []);
+  assert.equal(config.images.dangerouslyAllowSVG, false);
+  assert.ok(config.images.sizes.length > 0, 'Vercel requires a nonempty sizes array');
+  assert.equal(config.routes, undefined, 'Do not rely on app routing to block platform images');
 });

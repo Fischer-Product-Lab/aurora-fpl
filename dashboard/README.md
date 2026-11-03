@@ -110,14 +110,18 @@ uses default test isolation, matching the compatibility fix proposed in PR #11.
 ### Production image policy
 
 Aurora's UI uses committed static images and does not need on-demand image
-transformation. Both deployment targets disable their unused optimizer: the
-Worker rejects `/_vinext/image`, and Next sets `images.unoptimized: true`. Vercel
-also needs an explicit 404 route in `vercel.json`: its platform image endpoint
-can remain available even when the local Next handler disables optimization.
-Original public images, fonts, audio, and data remain directly accessible.
+transformation. The Worker rejects `/_vinext/image`, and Next sets
+`images.unoptimized: true` for its local handler. Vercel's separate platform
+pipeline can run before application routing. The explicit `images` configuration
+in `vercel.json` sets empty local, remote and legacy-domain allowlists to deny
+every optimizer source. Direct public
+images, fonts, audio, and data remain accessible.
 
 `npm run verify:vercel` builds Next and runs a loopback-only production HTTP test.
-It confirms the Next optimizer returns 404, compares public asset bytes with the
+It confirms the local Next optimizer returns 404 and the Vercel optimizer
+allowlists are empty, compares public asset bytes with the
 committed files, checks the landing and demo routes, and verifies a run deep link.
+Release checks must also verify that Vercel rejects ordinary local image
+optimization requests (400 or 404) while serving the direct originals.
 If adding optimized images later, revisit the policy explicitly and audit the
 image-processing dependencies before enabling the endpoint.

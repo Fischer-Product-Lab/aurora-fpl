@@ -3,14 +3,16 @@
   "framework": "nextjs",
   "buildCommand": "npm run build:vercel",
   "installCommand": "npm ci",
-  "routes": [
-    {
-      "src": "^/_next/image(?:/.*)?$",
-      "status": 404,
-      "headers": {
-        "Cache-Control": "no-store",
-        "X-Content-Type-Options": "nosniff"
-      }
-    }
-  ]
+  "images": {
+    "sizes": [
+      640
+    ],
+    "qualities": [
+      75
+    ],
+    "domains": [],
+    "localPatterns": [],
+    "remotePatterns": [],
+    "dangerouslyAllowSVG": false
+  }
 }
