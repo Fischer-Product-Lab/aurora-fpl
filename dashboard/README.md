@@ -85,3 +85,37 @@ files under `public/` for credential patterns, personal contact details, local
 machine paths, and IP addresses without printing any detected value. Keep model
 recordings and real incident data outside `public/`; everything in that folder
 must be treated as openly downloadable.
+
+## Matched experiment workbench
+
+The explorer opens on the selected experiment, with the plain-English guide and
+portfolio case study available as expandable sections. Every displayed run is a
+recorded synthetic simulation; selecting a run does not call a model or start a
+new simulation.
+
+Matched comparisons use only explicit `matched_control_for` relationships in the
+manifest and require matching seed, incident variant, study, and strategy. They
+show control and intervention metrics side by side. A missing recovery time is
+not treated as zero. The first observable trace change compares event time, kind,
+actor, task, and message in recorded order; it excludes metadata and does not
+claim to establish causality. Select either event to inspect its full audit entry.
+Budget comparisons distinguish the shared worker failure from the capacity
+intervention, including the unchanged negative control.
+
+During replay, comparison outcomes and detailed evidence remain hidden until the
+recorded completion event or until **Explore instantly** is selected. The new
+comparison contract is covered by `tests/comparison.test.mjs`. The Node runner
+uses default test isolation, matching the compatibility fix proposed in PR #11.
+
+### Production image policy
+
+Aurora's UI uses committed static images and does not need on-demand image
+transformation. Both deployment targets disable their unused optimizer: the
+Worker rejects `/_vinext/image`, and Next sets `images.unoptimized: true` for
+Vercel. Original public images, fonts, audio, and data remain directly accessible.
+
+`npm run verify:vercel` builds Next and runs a loopback-only production HTTP test.
+It confirms the Next optimizer returns 404, compares public asset bytes with the
+committed files, checks the landing and demo routes, and verifies a run deep link.
+If adding optimized images later, revisit the policy explicitly and audit the
+image-processing dependencies before enabling the endpoint.

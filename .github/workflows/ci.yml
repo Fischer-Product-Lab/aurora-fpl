@@ -60,5 +60,5 @@ jobs:
       - name: Build and test dashboard
         run: npm test
 
-      - name: Verify Vercel build target
-        run: npm run build:vercel
+      - name: Verify Vercel build target and image policy
+        run: npm run verify:vercel

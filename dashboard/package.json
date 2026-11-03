@@ -12,15 +12,16 @@
     "build:vercel": "next build",
     "start": "vinext start",
     "start:vercel": "next start",
-    "test": "npm run security:public && npm run build && node --test --test-isolation=none tests/rendered-html.test.mjs tests/replay.test.mjs",
-    "verify:vercel": "npm run security:public && npm run build:vercel",
+    "test": "npm run security:public && npm run build && node --test tests/rendered-html.test.mjs tests/replay.test.mjs tests/comparison.test.mjs",
+    "verify:vercel": "npm run security:public && npm run test:vercel",
+    "test:vercel": "npm run build:vercel && node --test tests/vercel-runtime.test.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "security:public": "node scripts/scan-public-artifacts.mjs"
   },
   "dependencies": {
-    "next": "16.3.2",
-    "react": "19.2.6",
-    "react-dom": "19.2.6"
+    "next": "16.4.5",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "1.45.1",
@@ -32,8 +33,8 @@
     "@vitejs/plugin-react": "6.0.2",
     "@vitejs/plugin-rsc": "0.5.26",
     "eslint": "9.39.4",
-    "eslint-config-next": "16.3.2",
-    "react-server-dom-webpack": "19.2.6",
+    "eslint-config-next": "16.4.5",
+    "react-server-dom-webpack": "19.2.8",
     "tailwindcss": "4.2.1",
     "typescript": "5.9.3",
     "vinext": "0.0.50",

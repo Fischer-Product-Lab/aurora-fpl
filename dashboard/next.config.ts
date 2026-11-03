@@ -20,6 +20,11 @@ const contentSecurityPolicy = [
 ].join("; ");
 
 const nextConfig: NextConfig = {
+  // Aurora serves committed static assets and has no optimized-image UI.
+  // Disable the unused Next/Vercel optimizer as well as the Worker endpoint.
+  images: {
+    unoptimized: true,
+  },
   async redirects() {
     return [
       {

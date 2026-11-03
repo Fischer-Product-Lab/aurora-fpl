@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { LiveReplay, type ExperienceMode } from "./live-replay";
+import { matchedPair, firstObservableChange, numericDelta } from "./comparison-model.mjs";
 
 type MetadataPairs = [string, string][];
 
@@ -33,7 +34,16 @@ type WalkthroughStep = {
   explanation: string;
 };
 
+export type ArtifactRelationship = {
+  id: string;
+  type: string;
+  source_artifact_id: string;
+  target_artifact_id: string;
+  metadata: Record<string, unknown>;
+};
+
 type Manifest = {
+  relationships?: ArtifactRelationship[];
   schema_version: string;
   type: string;
   kind: string;
@@ -130,6 +140,8 @@ type ArtifactEnvelope = {
   data: SimulationResult | Record<string, unknown>;
   metrics?: RunMetrics;
 };
+
+export type RunEnvelope = ArtifactEnvelope & { data: SimulationResult; metrics: RunMetrics };
 
 type Panel =
   | "timeline"
@@ -326,6 +338,9 @@ async function fetchArtifact(url: URL) {
       fetch(key).then(async (response) => {
         if (!response.ok) throw new Error(`Artifact returned ${response.status}`);
         return (await response.json()) as ArtifactEnvelope;
+      }).catch((error: unknown) => {
+        artifactCache.delete(key);
+        throw error;
       }),
     );
   }
@@ -657,9 +672,10 @@ function ComparisonStrip({
   return (
     <div className="comparison-strip" aria-label="Runs in this story">
       {runs.map((run) => {
-        const outcomeHidden = concealSelectedOutcome && run.id === selectedId;
+        const outcomeHidden = concealSelectedOutcome;
         return (
           <button
+            aria-pressed={run.id === selectedId}
             className="comparison-run"
             data-selected={run.id === selectedId}
             key={run.id}
@@ -678,10 +694,71 @@ function ComparisonStrip({
   );
 }
 
+function MatchedComparison({
+  runs, relationships, selectedId, onInspect,
+}: {
+  runs: RunEnvelope[];
+  relationships: ArtifactRelationship[];
+  selectedId: string;
+  onInspect: (runId: string, event: TraceEvent) => void;
+}) {
+  const pair = matchedPair(runs, relationships, selectedId);
+  if (!pair) return null;
+  const { control, fault } = pair;
+  const change = firstObservableChange(control, fault);
+  const budgetStudy = control.metadata.study === "fallback_budget_exhaustion";
+  const participants = [
+    { label: "Control", run: control, event: change?.controlEvent ?? null },
+    { label: budgetStudy ? "Tight capacity" : "Injected fault", run: fault, event: change?.faultEvent ?? null },
+  ];
+  const signed = (value: number | null, suffix = "") => value === null ? "Not comparable" : value === 0 ? "No change" : `${value > 0 ? "+" : "−"}${Math.abs(value)}${suffix}`;
+  const recoveryDelta = numericDelta(control.metrics.confirmed_recovery_ms, fault.metrics.confirmed_recovery_ms);
+  const rows = [
+    { label: "Recovery confirmed", control: milliseconds(control.metrics.confirmed_recovery_ms), fault: milliseconds(fault.metrics.confirmed_recovery_ms), change: recoveryDelta === null ? "Not comparable" : signed(Number((recoveryDelta / 1000).toFixed(2)), " s") },
+    { label: "Health checks passed", control: `${control.metrics.verification_passes} / 2`, fault: `${fault.metrics.verification_passes} / 2`, change: signed(numericDelta(control.metrics.verification_passes, fault.metrics.verification_passes)) },
+    { label: "Effort units", control: control.data.cost_units_used, fault: fault.data.cost_units_used, change: signed(numericDelta(control.data.cost_units_used, fault.data.cost_units_used)) },
+    { label: "Tool calls", control: control.data.tool_calls_used, fault: fault.data.tool_calls_used, change: signed(numericDelta(control.data.tool_calls_used, fault.data.tool_calls_used)) },
+    { label: "Approval violations", control: control.metrics.approval_violations, fault: fault.metrics.approval_violations, change: signed(numericDelta(control.metrics.approval_violations, fault.metrics.approval_violations)) },
+  ];
+
+  return (
+    <section className="matched-lab" aria-labelledby="matched-lab-title">
+      <header className="matched-heading">
+        <div><span className="eyebrow">Controlled comparison</span><h2 id="matched-lab-title">Same conditions. One intervention.</h2></div>
+        <span className="matched-seed">Seed {String(control.metadata.seed)} · recorded pair</span>
+      </header>
+      <p className="matched-context">Matched by the manifest, with the same incident variant and {humanize(control.data.strategy).toLowerCase()} strategy. {budgetStudy ? "Both runs share the specialist failure; only fallback capacity changes." : "Compare the control with its fault-injected counterpart."}</p>
+      <div className="matched-outcomes">
+        {participants.map(({ label, run }) => {
+          return <article key={run.id} data-selected={run.id === selectedId}>
+            <div><span className="eyebrow">{String(label)}</span>{run.id === selectedId && <span className="matched-selected">Selected run</span>}</div>
+            <strong>{runConditionLabel(run)}</strong>
+            <span className={`outcome-chip ${outcomeTone(run)}`}>{outcomeLabel(run)}</span>
+          </article>;
+        })}
+      </div>
+      <div className="matched-table-scroll" role="region" aria-label="Control and intervention metrics" tabIndex={0}>
+        <table className="matched-table">
+          <caption className="sr-only">Observed results for the selected matched pair. Differences are intervention minus control.</caption>
+          <thead><tr><th scope="col">Observed result</th><th scope="col">Control</th><th scope="col">{budgetStudy ? "Tight capacity" : "Fault"}</th><th scope="col">Difference</th></tr></thead>
+          <tbody>{rows.map((row) => <tr key={row.label}><th scope="row">{row.label}</th><td>{row.control}</td><td>{row.fault}</td><td>{row.change}</td></tr>)}</tbody>
+        </table>
+      </div>
+      <div className="trace-divergence">
+        <div className="divergence-label"><span className="eyebrow">Follow the evidence</span><h3>{change ? "First observable trace change" : "No observable trace change"}</h3><p>{change ? `${change.matchingEvents} preceding events match in time, kind, actor, task, and message. Select an event to inspect its full metadata.` : `Event timing, kind, actor, task, and message are identical.${budgetStudy && control.metadata.negative_control && fault.metadata.negative_control ? " This negative control leaves the capacity intervention dormant." : " Inspect event metadata for differences outside this scan."}`}</p></div>
+        {change && <div className="divergence-events">{participants.map(({ label, run, event }) => {
+          return event ? <button key={run.id} type="button" onClick={() => onInspect(run.id, event)}><span>{String(label)} · Event #{event.sequence} · {milliseconds(event.at_ms)}</span><strong>{humanize(event.kind)}</strong><small>{event.message}</small><em>Inspect full event →</em></button> : <p key={run.id}>{String(label)} has no further event.</p>;
+        })}</div>}
+      </div>
+      <p className="matched-limit">Differences are intervention minus control, not a performance rating. Virtual time and effort units are synthetic. Event metadata is excluded from the first-change scan; inspect the full audit log for complete evidence. This one seeded pair does not establish general model reliability.</p>
+    </section>
+  );
+}
+
 function EventInspector({ event, onClose }: { event: TraceEvent; onClose: () => void }) {
   const known = KNOWN_EVENTS.has(event.kind);
   return (
-    <aside className="event-inspector" aria-label="Selected event details">
+    <aside className="event-inspector" id="event-inspector" tabIndex={-1} aria-label="Selected event details" onKeyDown={(event) => { if (event.key === "Escape") { event.preventDefault(); onClose(); } }}>
       <div className="section-heading compact">
         <div>
           <span className="eyebrow">Event #{event.sequence}</span>
@@ -1025,23 +1102,31 @@ export default function RunExplorer() {
   const [replayComplete, setReplayComplete] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [retryKey, setRetryKey] = useState(0);
+  const inspectTrigger = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    const url = new URL("data/manifest.json", document.baseURI);
+    let cancelled = false;
+    const url = new URL("/data/manifest.json", document.baseURI);
     fetch(url)
       .then(async (response) => {
         if (!response.ok) throw new Error(`Manifest returned ${response.status}`);
         const loaded = (await response.json()) as Manifest;
+        if (cancelled) return;
         if (!loaded.schema_version.startsWith("1.")) throw new Error(`Unsupported manifest version ${loaded.schema_version}`);
-        const requested = new URLSearchParams(window.location.search).get("story");
-        const initialStory = loaded.stories.find((story) => story.id === requested) ?? loaded.stories[0];
+        const params = new URLSearchParams(window.location.search);
+        const requested = params.get("story");
+        const initialStory = loaded.stories.find((story) => story.id === requested)
+          ?? loaded.stories.find((story) => story.artifact_ids.includes(params.get("run") ?? ""))
+          ?? loaded.stories[0];
         setManifest(loaded);
         setManifestUrl(url);
         setStoryId(initialStory?.id ?? "");
       })
-      .catch((caught: unknown) => setError(caught instanceof Error ? caught.message : "Unable to load showcase manifest"))
-      .finally(() => setLoading(false));
-  }, []);
+      .catch((caught: unknown) => !cancelled && setError(caught instanceof Error ? caught.message : "Unable to load showcase manifest"))
+      .finally(() => !cancelled && setLoading(false));
+    return () => { cancelled = true; };
+  }, [retryKey]);
 
   useEffect(() => {
     if (!manifest || !manifestUrl || !storyId) return;
@@ -1063,10 +1148,10 @@ export default function RunExplorer() {
       .catch((caught: unknown) => !cancelled && setError(caught instanceof Error ? caught.message : "Unable to load story artifacts"))
       .finally(() => !cancelled && setLoading(false));
     return () => { cancelled = true; };
-  }, [manifest, manifestUrl, storyId]);
+  }, [manifest, manifestUrl, storyId, retryKey]);
 
   const story = manifest?.stories.find((candidate) => candidate.id === storyId) ?? null;
-  const runs = useMemo(() => artifacts.filter(isRunEnvelope), [artifacts]);
+  const runs = useMemo(() => artifacts.filter(isRunEnvelope).filter((run) => story?.artifact_ids.includes(run.id)), [artifacts, story]);
   const selectedRun = runs.find((run) => run.id === selectedArtifactId) ?? runs[0] ?? null;
 
   function updateLocation(nextStory: string, nextRun?: string) {
@@ -1077,6 +1162,9 @@ export default function RunExplorer() {
   }
 
   function chooseStory(nextStory: string) {
+    if (nextStory === storyId) return;
+    setLoading(true);
+    setSelectedEvent(null);
     setReplayComplete(false);
     setStoryId(nextStory);
     updateLocation(nextStory);
@@ -1089,38 +1177,62 @@ export default function RunExplorer() {
     updateLocation(storyId, nextRun);
   }
 
-  if (loading && !manifest) return <main className="loading-state" aria-live="polite"><span className="loading-mark" /><p>Assembling the incident dossier…</p></main>;
-  if (error) return <main className="error-state"><span className="eyebrow">Data could not be loaded</span><h1>Aurora Run Explorer</h1><p>{error}</p><p>Generate the showcase bundle, then reload this page.</p></main>;
+  function inspectComparisonEvent(runId: string, event: TraceEvent) {
+    inspectTrigger.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    chooseRun(runId);
+    setPanel("trace");
+    setSelectedEvent(event);
+    requestAnimationFrame(() => {
+      const inspector = document.getElementById("event-inspector");
+      inspector?.focus();
+      inspector?.scrollIntoView({ block: "center", behavior: "instant" });
+    });
+  }
+
+  function closeInspector() {
+    setSelectedEvent(null);
+    requestAnimationFrame(() => inspectTrigger.current?.focus());
+  }
+
+  function retryLoad() {
+    setError("");
+    setLoading(true);
+    setRetryKey((key) => key + 1);
+  }
+
+  if (loading && (!manifest || !selectedRun)) return <main className="loading-state" aria-live="polite"><span className="loading-mark" /><p>Assembling the incident dossier…</p></main>;
+  if (error) return <main className="error-state"><span className="eyebrow">Data could not be loaded</span><h1>Aurora Run Explorer</h1><p>{error}</p><p>The recorded data is unavailable. You can retry without leaving the explorer.</p><button className="retry-artifacts" onClick={retryLoad} type="button">Retry loading data</button></main>;
   if (!manifest || !story || !selectedRun) return <main className="error-state"><h1>Aurora Run Explorer</h1><p>No curated run is available.</p></main>;
 
   const totalScore = scoreTotal(selectedRun.data.score);
   const revealRunOutcome = experienceMode === "explore" || replayComplete;
 
   return (
-    <main className="app-shell">
+    <main className="app-shell lab-refresh">
       <a className="skip-link" href="#explorer-content">Skip to run details</a>
       <header className="app-header">
         <Link className="brand-block" href="/"><span className="brand-mark" aria-hidden="true">A</span><div><strong>Aurora Run Explorer</strong><span className="eyebrow">Fischer Product Lab · Agent orchestration</span></div></Link>
-        <div className="header-proof"><Link href="/">Title page</Link><span>Deterministic</span><span>Trace-derived</span><span>Schema v{manifest.schema_version}</span></div>
+        <div className="header-proof"><Link href="/">About the lab</Link><span>Read-only experiment</span><span>Schema v{manifest.schema_version}</span></div>
       </header>
 
       <div className="workspace">
         <nav className="story-rail" aria-label="Curated simulation stories">
-          <div><span className="eyebrow">Choose a demo</span><h2>Pick a scenario. See what happened. Then inspect the proof.</h2></div>
-          {manifest.stories.map((item, index) => <button aria-current={item.id === storyId ? "page" : undefined} key={item.id} onClick={() => chooseStory(item.id)} type="button"><span>{String(index + 1).padStart(2, "0")}</span><div><strong>{item.title}</strong><small>{item.summary}</small></div></button>)}
+          <div><span className="eyebrow">Experiment library</span><h2>Test the safeguards.</h2><p className="rail-intro">Pick a controlled failure. Follow the decision to its proof.</p></div>
+          {manifest.stories.map((item, index) => <button aria-current={item.id === storyId ? "page" : undefined} key={item.id} onClick={() => chooseStory(item.id)} type="button"><span>{String(index + 1).padStart(2, "0")}</span><div><strong>{["Coordinated response", "A missing plan step", "An unavailable specialist", "An unaffordable backup"][index] ?? item.title}</strong><small>{index === 0 ? "Baseline · guided architecture tour" : "Matched control + intervention"}</small></div></button>)}
           <div className="rail-footnote"><span className="status-dot recovered" /><p>All displayed metrics are reconstructed from immutable events and results.</p></div>
         </nav>
 
-        <div className="explorer-content" id="explorer-content">
-          <PortfolioCaseStudy />
+        <div className="explorer-content" id="explorer-content" tabIndex={-1}>
+          <div className="lab-disclosure"><span className="lab-indicator" aria-hidden="true" /><strong>Recorded synthetic experiment</strong><span>Scripted agents · virtual clock · no live model calls</span></div>
 
           <section className="story-hero">
-            <div className="hero-copy"><span className="eyebrow">{studyLabel(story)}</span><h1>{story.title}</h1><p>{story.summary}</p></div>
+            <div className="hero-copy"><span className="eyebrow">Experiment {String(manifest.stories.findIndex((item) => item.id === storyId) + 1).padStart(2, "0")} / {String(manifest.stories.length).padStart(2, "0")} · {studyLabel(story)}</span><h1>{story.title}</h1><p>{story.summary}</p></div>
             <div className="hero-status"><span className={`outcome-chip large ${revealRunOutcome ? outcomeTone(selectedRun) : "pending"}`}>{revealRunOutcome ? outcomeLabel(selectedRun) : "Outcome hidden during replay"}</span><code>{selectedRun.data.run_id}</code></div>
           </section>
 
-          <SimpleWalkthrough story={story} />
+          <details className="lab-guide" key={story.id}><summary><span>Understand this experiment</span><small>Plain-English guide and what to watch</small></summary><SimpleWalkthrough story={story} /></details>
 
+          <div className="run-picker-heading"><span className="eyebrow">Choose a recorded run</span><span>{runs.length} available · no new simulation is started</span></div>
           <ComparisonStrip concealSelectedOutcome={!revealRunOutcome} runs={runs} selectedId={selectedRun.id} onSelect={chooseRun} />
 
           <LiveReplay
@@ -1130,6 +1242,8 @@ export default function RunExplorer() {
             onModeChange={setExperienceMode}
             run={selectedRun}
           />
+
+          {revealRunOutcome && !loading && <MatchedComparison runs={runs} relationships={manifest.relationships ?? []} selectedId={selectedRun.id} onInspect={inspectComparisonEvent} />}
 
           <section className="metric-grid" aria-label="Selected run summary">
             {revealRunOutcome ? (
@@ -1155,8 +1269,8 @@ export default function RunExplorer() {
           {revealRunOutcome && !loading && panel === "governance" && <GovernancePanel run={selectedRun} />}
           {revealRunOutcome && !loading && panel === "verification" && <VerificationPanel run={selectedRun} />}
           {revealRunOutcome && !loading && panel === "budget" && <BudgetPanel run={selectedRun} />}
-          {revealRunOutcome && !loading && panel === "trace" && <TracePanel run={selectedRun} onSelectEvent={setSelectedEvent} />}
-          {revealRunOutcome && !loading && panel === "trace" && selectedEvent && <EventInspector event={selectedEvent} onClose={() => setSelectedEvent(null)} />}
+          {revealRunOutcome && !loading && panel === "trace" && <TracePanel run={selectedRun} onSelectEvent={(event) => inspectComparisonEvent(selectedRun.id, event)} />}
+          {revealRunOutcome && !loading && panel === "trace" && selectedEvent && <EventInspector event={selectedEvent} onClose={closeInspector} />}
 
           {!revealRunOutcome && (
             <section className="replay-detail-lock" aria-label="Detailed results hidden during replay">
@@ -1165,6 +1279,8 @@ export default function RunExplorer() {
               <button onClick={() => setExperienceMode("explore")} type="button">Explore full result</button>
             </section>
           )}
+
+          <details className="lab-guide lab-background"><summary><span>About Aurora and its limits</span><small>Case study, architecture, and narrated walkthrough</small></summary><PortfolioCaseStudy /></details>
 
           <footer className="app-footer"><div><strong>Aurora Agent Orchestration Lab</strong><span>A Fischer Product Lab experiment.</span><span>Deterministic studies, plus one optional model-backed diagnosis behind the same controls.</span></div><div><span>{selectedRun.data.trace.length} events</span><span>{selectedRun.data.evidence.length} evidence items</span><span>{selectedRun.data.task_results.length} tasks</span></div></footer>
         </div>
