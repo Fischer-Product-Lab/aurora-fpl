@@ -2,17 +2,5 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
   "buildCommand": "npm run build:vercel",
-  "installCommand": "npm ci",
-  "images": {
-    "sizes": [
-      640
-    ],
-    "qualities": [
-      75
-    ],
-    "domains": [],
-    "localPatterns": [],
-    "remotePatterns": [],
-    "dangerouslyAllowSVG": false
-  }
+  "installCommand": "npm ci"
 }

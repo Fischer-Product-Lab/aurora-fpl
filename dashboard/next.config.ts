@@ -21,9 +21,13 @@ const contentSecurityPolicy = [
 
 const nextConfig: NextConfig = {
   // Aurora serves committed static assets and has no optimized-image UI.
-  // Vercel has a separate source-denial policy in vercel.json.
+  // The Vercel adapter reads these source allowlists, not images.unoptimized.
+  // Next permits generated static-media imports; this app emits none.
   images: {
     unoptimized: true,
+    localPatterns: [],
+    remotePatterns: [],
+    domains: [],
   },
   async redirects() {
     return [

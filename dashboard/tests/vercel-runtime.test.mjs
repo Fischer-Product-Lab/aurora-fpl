@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import { createServer } from 'node:http';
 import { once } from 'node:events';
 import { fileURLToPath } from 'node:url';
@@ -56,13 +57,30 @@ test('Vercel/Next target disables the unused optimizer and preserves public asse
   assert.match(deepLink.headers.get('location') ?? '', /^\/demo\?run=worker-fault-with-fallback$/);
 });
 
-// Vercel optimization precedes app routes and is configured independently.
-test('Vercel image policy allows no local or remote optimizer sources', async () => {
-  const config = JSON.parse(await readFile(new URL('../vercel.json', import.meta.url), 'utf8'));
-  assert.deepEqual(config.images.localPatterns, []);
-  assert.deepEqual(config.images.remotePatterns, []);
-  assert.deepEqual(config.images.domains, []);
-  assert.equal(config.images.dangerouslyAllowSVG, false);
-  assert.ok(config.images.sizes.length > 0, 'Vercel requires a nonempty sizes array');
-  assert.equal(config.routes, undefined, 'Do not rely on app routing to block platform images');
+// The hosted Vercel adapter consumes Next config and permits static-image imports.
+test('Next image policy rejects public and remote sources with no generated media', async () => {
+  const { images } = JSON.parse(await readFile(new URL('../.next/images-manifest.json', import.meta.url), 'utf8'));
+  assert.deepEqual(images.remotePatterns, []);
+  assert.deepEqual(images.domains, []);
+  const require = createRequire(import.meta.url);
+  const { makeRe } = require('next/dist/compiled/picomatch');
+  const implicitPatterns = ['/_next/static/media/**', '/_next/static/immutable/media/**'];
+  assert.deepEqual(images.localPatterns, implicitPatterns.map((pathname) => ({
+    pathname: makeRe(pathname, { dot: true }).source, search: '',
+  })));
+  for (const pathname of ['/og.png', '/og-fischer.png', '/favicon.svg', '/data/manifest.json']) {
+    assert.equal(images.localPatterns.some((p) => new RegExp(p.pathname).test(pathname)), false, pathname);
+  }
+  const staticFiles = await readdir(new URL('../.next/static/', import.meta.url), { recursive: true });
+  assert.deepEqual(staticFiles.filter((p) => /^(?:immutable\/)?media(?:\/|$)/.test(p)), [],
+    'Adding generated static media requires an explicit optimizer-policy review');
+});
+
+// npm audit may lag maintainer advisories. Guard the known fixed RSC release too.
+test('React runtime packages meet the reviewed security patch baseline', async () => {
+  for (const name of ['react', 'react-dom', 'react-server-dom-webpack']) {
+    const { version } = JSON.parse(await readFile(new URL(`../node_modules/${name}/package.json`, import.meta.url), 'utf8'));
+    const [major, minor, patch] = version.split('.').map(Number);
+    assert.ok(major === 19 && minor === 2 && patch >= 9, `${name}: review security advisories before changing the release line`);
+  }
 });

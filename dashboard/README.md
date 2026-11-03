@@ -111,17 +111,23 @@ uses default test isolation, matching the compatibility fix proposed in PR #11.
 
 Aurora's UI uses committed static images and does not need on-demand image
 transformation. The Worker rejects `/_vinext/image`, and Next sets
-`images.unoptimized: true` for its local handler. Vercel's separate platform
-pipeline can run before application routing. The explicit `images` configuration
-in `vercel.json` sets empty local, remote and legacy-domain allowlists to deny
-every optimizer source. Direct public
-images, fonts, audio, and data remain accessible.
+`images.unoptimized: true` for its local handler. The Vercel adapter reads image
+allowlists from Next config, so `localPatterns`, `remotePatterns`, and `domains`
+are explicitly empty there. Separate `vercel.json` image rules and ordinary
+application routes did not control the hosted adapter's optimizer in verification.
 
-`npm run verify:vercel` builds Next and runs a loopback-only production HTTP test.
-It confirms the local Next optimizer returns 404 and the Vercel optimizer
-allowlists are empty, compares public asset bytes with the
-committed files, checks the landing and demo routes, and verifies a run deep link.
-Release checks must also verify that Vercel rejects ordinary local image
-optimization requests (400 or 404) while serving the direct originals.
-If adding optimized images later, revisit the policy explicitly and audit the
-image-processing dependencies before enabling the endpoint.
+Next automatically adds its two generated-static-media prefixes to local patterns.
+Aurora currently emits no files under either prefix. Tests verify those are the
+only implicit allowances and reject public asset inputs. Adding generated static
+media requires a deliberate review. Direct public images, fonts, audio and data
+stay accessible.
+
+`npm run verify:vercel` builds Next and runs loopback-only production HTTP and
+configuration tests. They confirm the local optimizer returns 404, compare public
+asset bytes, check both pages and the run deep link, and verify the image-source
+policy and the reviewed React 19.2.9 security baseline. npm audit alone does not
+replace checking current maintainer advisories.
+
+Release checks must also verify that Vercel rejects ordinary local and remote
+image optimization requests with valid width and quality while serving originals.
+If adding optimized images later, revisit the policy and audit decoder dependencies.
