@@ -111,8 +111,10 @@ uses default test isolation, matching the compatibility fix proposed in PR #11.
 
 Aurora's UI uses committed static images and does not need on-demand image
 transformation. Both deployment targets disable their unused optimizer: the
-Worker rejects `/_vinext/image`, and Next sets `images.unoptimized: true` for
-Vercel. Original public images, fonts, audio, and data remain directly accessible.
+Worker rejects `/_vinext/image`, and Next sets `images.unoptimized: true`. Vercel
+also needs an explicit 404 route in `vercel.json`: its platform image endpoint
+can remain available even when the local Next handler disables optimization.
+Original public images, fonts, audio, and data remain directly accessible.
 
 `npm run verify:vercel` builds Next and runs a loopback-only production HTTP test.
 It confirms the Next optimizer returns 404, compares public asset bytes with the

@@ -54,3 +54,21 @@ test('Vercel/Next target disables the unused optimizer and preserves public asse
   assert.equal(deepLink.status, 307);
   assert.match(deepLink.headers.get('location') ?? '', /^\/demo\?run=worker-fault-with-fallback$/);
 });
+
+// Vercel's image pipeline is separate from the local Next request handler.
+// Keep an explicit platform rule and verify it against a hosted preview at release.
+test('Vercel routing blocks only the unused image optimizer', async () => {
+  const config = JSON.parse(await readFile(new URL('../vercel.json', import.meta.url), 'utf8'));
+  const rule = config.routes[0];
+  assert.equal(rule.status, 404);
+  assert.notEqual(rule.continue, true);
+  assert.equal(rule.headers['Cache-Control'], 'no-store');
+  assert.equal(rule.methods, undefined, 'The rule must cover every HTTP method');
+  const match = new RegExp(rule.src);
+  for (const pathname of ['/_next/image', '/_next/image/', '/_next/image/unused']) {
+    assert.ok(match.test(pathname), pathname);
+  }
+  for (const pathname of ['/', '/demo', '/og.png', '/_next/static/chunks/app.js', '/_next/image-other']) {
+    assert.equal(match.test(pathname), false, pathname);
+  }
+});
